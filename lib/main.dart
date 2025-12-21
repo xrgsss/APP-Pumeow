@@ -27,14 +27,25 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({
+    super.key,
+    this.initialBinding,
+    this.pages,
+    this.initialRoute,
+  });
+
+  final Bindings? initialBinding;
+  final List<GetPage<dynamic>>? pages;
+  final String? initialRoute;
+
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'PumeowID',
       debugShowCheckedModeBanner: false,
-      initialBinding: InitialBinding(),
-      initialRoute: AppPages.INITIAL,
-      getPages: AppPages.pages,
+      initialBinding: initialBinding ?? InitialBinding(),
+      initialRoute: initialRoute ?? AppPages.INITIAL,
+      getPages: pages ?? AppPages.pages,
     );
   }
 }
