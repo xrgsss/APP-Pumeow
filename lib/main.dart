@@ -6,6 +6,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'app/bindings/initial_binding.dart';
 import 'app/routes/app_pages.dart';
+import 'app/models/product.dart';
+import 'app/models/product_adapter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,7 +17,11 @@ void main() async {
 
   // Initialize Hive
   await Hive.initFlutter();
+  if (!Hive.isAdapterRegistered(productTypeId)) {
+    Hive.registerAdapter(ProductAdapter());
+  }
   await Hive.openBox('cart'); // Hive untuk cart lokal
+  await Hive.openBox<Product>('products'); // Hive untuk daftar produk lokal
 
   // Initialize Supabase
   await Supabase.initialize(
