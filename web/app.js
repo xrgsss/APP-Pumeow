@@ -742,8 +742,11 @@ function render() {
   if (route === ROUTES.HOME) {
     appRoot.classList.add("has-docked-nav");
     appRoot.insertAdjacentHTML("beforeend", renderBottomNav());
+    const homeScroller = appRoot.querySelector(".home-view");
+    enableDragScroll(homeScroller);
   } else {
     appRoot.classList.remove("has-docked-nav");
+    enableDragScroll(appRoot);
   }
   appRoot.querySelectorAll(".row-scroll").forEach(enableHorizontalDragScroll);
 }
@@ -1036,7 +1039,6 @@ if (startupClose && startupPopup) {
 }
 
 loadState();
-enableDragScroll(appRoot);
 if (!window.location.hash) {
   window.location.hash = `#${state.auth.isLoggedIn ? ROUTES.HOME : ROUTES.LOGIN}`;
 }
