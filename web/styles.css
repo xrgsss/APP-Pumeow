@@ -112,6 +112,7 @@ body {
 }
 
 .app-root {
+  position: relative;
   height: 100%;
   background: #ece9e4;
   border-radius: 24px;
@@ -510,6 +511,19 @@ body {
   z-index: 3;
 }
 
+.bottom-nav-docked {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  margin-top: 0;
+  z-index: 22;
+}
+
+.app-root.has-docked-nav .home-view {
+  padding-bottom: 92px;
+}
+
 .nav-btn {
   border: none;
   background: rgba(255, 255, 255, 0.85);
@@ -694,12 +708,16 @@ body {
 @media (max-width: 820px) {
   .page-shell {
     padding: max(14px, env(safe-area-inset-top, 0px)) 14px max(14px, env(safe-area-inset-bottom, 0px));
-    min-height: 100dvh;
+    min-height: 100svh;
   }
 
   .mobile-viewport {
-    width: min(100%, 390px);
-    max-height: calc(100dvh - 28px);
+    width: min(
+      390px,
+      calc(100vw - 28px),
+      calc((100svh - max(14px, env(safe-area-inset-top, 0px)) - max(14px, env(safe-area-inset-bottom, 0px))) * (375 / 740))
+    );
+    max-height: calc(100svh - max(14px, env(safe-area-inset-top, 0px)) - max(14px, env(safe-area-inset-bottom, 0px)));
     height: auto;
     aspect-ratio: 375 / 740;
     border-radius: 32px;
@@ -712,7 +730,7 @@ body {
 
   @supports not (height: 100dvh) {
     .mobile-viewport {
-      max-height: calc(100svh - 28px);
+      max-height: calc(100vh - max(14px, env(safe-area-inset-top, 0px)) - max(14px, env(safe-area-inset-bottom, 0px)));
     }
   }
 

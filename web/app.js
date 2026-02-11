@@ -449,6 +449,17 @@ function renderProductCard(product) {
   `;
 }
 
+function renderBottomNav() {
+  return `
+    <nav class="bottom-nav bottom-nav-docked">
+      <button class="nav-btn" data-action="go" data-route="${ROUTES.PROFILE}">${icon("person")}<span>Profile</span></button>
+      <button class="nav-btn" data-action="go" data-route="${ROUTES.FAVORITES}">${icon("favorite")}<span>Favorites</span></button>
+      <button class="nav-btn" data-action="go" data-route="${ROUTES.CART}">${icon("shopping_cart")}<span>Cart</span></button>
+      ${state.auth.isAdmin ? `<button class="nav-btn" data-action="go" data-route="${ROUTES.ADMIN_DASHBOARD}">${icon("dashboard")}<span>Admin</span></button>` : `<button class="nav-btn" data-action="go" data-route="${ROUTES.MAP}">${icon("map")}<span>Map</span></button>`}
+    </nav>
+  `;
+}
+
 function renderHome() {
   const variants = ["Semua", ...new Set(state.products.map((p) => p.variant))];
   const q = state.search.toLowerCase();
@@ -459,7 +470,7 @@ function renderHome() {
   });
 
   return `
-    <section class="view">
+    <section class="view home-view">
       <article class="card header-card">
         <div class="badge-icon"><img class="badge-logo" src="assets/images/logo.png" alt="Pumeow"></div>
         <div class="brand-copy">
@@ -480,13 +491,6 @@ function renderHome() {
       <div class="product-list">
         ${filtered.length ? filtered.map(renderProductCard).join("") : `<div class="card muted">Produk tidak ditemukan</div>`}
       </div>
-
-      <nav class="bottom-nav">
-        <button class="nav-btn" data-action="go" data-route="${ROUTES.PROFILE}">${icon("person")}<span>Profile</span></button>
-        <button class="nav-btn" data-action="go" data-route="${ROUTES.FAVORITES}">${icon("favorite")}<span>Favorites</span></button>
-        <button class="nav-btn" data-action="go" data-route="${ROUTES.CART}">${icon("shopping_cart")}<span>Cart</span></button>
-        ${state.auth.isAdmin ? `<button class="nav-btn" data-action="go" data-route="${ROUTES.ADMIN_DASHBOARD}">${icon("dashboard")}<span>Admin</span></button>` : `<button class="nav-btn" data-action="go" data-route="${ROUTES.MAP}">${icon("map")}<span>Map</span></button>`}
-      </nav>
     </section>
   `;
 }
@@ -735,6 +739,12 @@ function render() {
 
   const renderer = viewMap[route] || renderLogin;
   appRoot.innerHTML = renderer();
+  if (route === ROUTES.HOME) {
+    appRoot.classList.add("has-docked-nav");
+    appRoot.insertAdjacentHTML("beforeend", renderBottomNav());
+  } else {
+    appRoot.classList.remove("has-docked-nav");
+  }
   appRoot.querySelectorAll(".row-scroll").forEach(enableHorizontalDragScroll);
 }
 
