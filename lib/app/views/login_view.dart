@@ -20,7 +20,12 @@ class LoginView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // LOGO / ICON
-              const Icon(Icons.lock_outline, size: 80, color: Colors.teal),
+              Center(
+                child: SizedBox(
+                  height: 120,
+                  child: Image.asset('assets/images/logo.png'),
+                ),
+              ),
               const SizedBox(height: 16),
 
               const Text(

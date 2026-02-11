@@ -12,6 +12,8 @@ import '../views/checkout_view.dart';
 import '../views/payment_view.dart';
 import '../views/payment_simulation_view.dart';
 import '../views/payment_success_view.dart';
+import '../views/admin_dashboard_view.dart';
+import '../views/favorites_view.dart';
 
 part 'app_routes.dart';
 
@@ -44,6 +46,11 @@ class AppPages {
       page: () => CartView(),
       binding: InitialBinding(),
     ),
+    GetPage(
+      name: Routes.FAVORITES,
+      page: () => FavoritesView(),
+      binding: InitialBinding(),
+    ),
     GetPage(name: Routes.MAP, page: () => MapView(), binding: InitialBinding()),
     GetPage(
       name: Routes.PROFILE,
@@ -68,6 +75,11 @@ class AppPages {
     GetPage(
       name: Routes.PAYMENT_SUCCESS,
       page: () => PaymentSuccessView(),
+      binding: InitialBinding(),
+    ),
+    GetPage(
+      name: Routes.ADMIN_DASHBOARD,
+      page: () => AdminDashboardView(),
       binding: InitialBinding(),
     ),
   ];

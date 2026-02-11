@@ -82,6 +82,7 @@ class MapView extends StatelessWidget {
                     arguments: {
                       'lat': locationController.latitude.value,
                       'lng': locationController.longitude.value,
+                      'address': locationController.address.value,
                     },
                   );
                 },

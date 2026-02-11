@@ -12,6 +12,7 @@ class PaymentView extends StatelessWidget {
   Widget build(BuildContext context) {
     final lat = args?['lat'] as double?;
     final lng = args?['lng'] as double?;
+    final address = args?['address'] as String?;
 
     return Scaffold(
       appBar: AppBar(
@@ -26,9 +27,11 @@ class PaymentView extends StatelessWidget {
               leading: const Icon(Icons.location_pin, color: Colors.red),
               title: const Text('Lokasi dikonfirmasi'),
               subtitle: Text(
-                lat != null && lng != null
-                    ? 'Lat: ${lat.toStringAsFixed(5)}, Lng: ${lng.toStringAsFixed(5)}'
-                    : 'Lokasi tidak tersedia',
+                (address != null && address.isNotEmpty)
+                    ? address
+                    : (lat != null && lng != null
+                        ? 'Lat: ${lat.toStringAsFixed(5)}, Lng: ${lng.toStringAsFixed(5)}'
+                        : 'Lokasi tidak tersedia'),
               ),
             ),
           ),
@@ -91,6 +94,7 @@ class PaymentView extends StatelessWidget {
         'method': method,
         'lat': args?['lat'],
         'lng': args?['lng'],
+        'address': args?['address'],
       },
     );
   }

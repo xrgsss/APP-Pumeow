@@ -9,12 +9,38 @@ class SupabaseService {
 
   Future<List<Product>> fetchProducts() async {
     final data = await _client.from('products').select();
-    if (data is! List) return [];
+    final list = data as List<dynamic>;
+    return list.map((e) => Product.fromMap(e as Map<String, dynamic>)).toList();
+  }
 
-    return data.map((item) {
-      final map = item as Map<String, dynamic>;
-      return Product.fromMap(map);
-    }).toList();
+  Future<Product?> createProduct(Product product) async {
+    final payload = product.toJson();
+    payload.remove('id');
+    final res = await _client.from('products').insert(payload).select().maybeSingle();
+    if (res == null) return null;
+    return Product.fromMap(res);
+  }
+
+  Future<Product?> updateProduct(Product product) async {
+    final payload = product.toJson();
+    final res = await _client
+        .from('products')
+        .update(payload)
+        .eq('id', product.id)
+        .select()
+        .maybeSingle();
+    if (res == null) return null;
+    return Product.fromMap(res);
+  }
+
+  Future<void> deleteProduct(int id) async {
+    await _client.from('products').delete().eq('id', id);
+  }
+
+  Future<List<Map<String, dynamic>>> fetchOrders() async {
+    final data = await _client.from('orders').select(
+        'id, user_id, buyer_email, method, total, created_at, order_items (product_id, quantity, price)');
+    return (data as List<dynamic>).cast<Map<String, dynamic>>();
   }
 
   Future<String?> createOrder({
@@ -31,6 +57,7 @@ class SupabaseService {
 
     final orderPayload = {
       'user_id': user?.id,
+      'buyer_email': user?.email,
       'method': method,
       'total': total,
       'lat': lat,

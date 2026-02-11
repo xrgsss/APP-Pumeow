@@ -15,6 +15,7 @@ class PaymentSimulationView extends StatelessWidget {
     final method = (args?['method'] as String?) ?? 'Pembayaran';
     final lat = args?['lat'] as double?;
     final lng = args?['lng'] as double?;
+    final address = args?['address'] as String?;
 
     return Scaffold(
       appBar: AppBar(
@@ -29,9 +30,11 @@ class PaymentSimulationView extends StatelessWidget {
               leading: const Icon(Icons.location_on, color: Colors.red),
               title: const Text('Lokasi pengantaran'),
               subtitle: Text(
-                lat != null && lng != null
-                    ? 'Lat: ${lat.toStringAsFixed(5)}, Lng: ${lng.toStringAsFixed(5)}'
-                    : 'Lokasi belum tersedia',
+                (address != null && address.isNotEmpty)
+                    ? address
+                    : (lat != null && lng != null
+                        ? 'Lat: ${lat.toStringAsFixed(5)}, Lng: ${lng.toStringAsFixed(5)}'
+                        : 'Lokasi belum tersedia'),
               ),
             ),
           ),

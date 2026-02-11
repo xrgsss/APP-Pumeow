@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/product_controller.dart';
 import '../controllers/cart_controller.dart';
+import '../controllers/favorite_controller.dart';
+import '../controllers/auth_controller.dart';
 import '../models/product.dart';
 import '../routes/app_pages.dart';
-import '../services/notification_service.dart';
+import '../theme/app_colors.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -16,6 +18,8 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   final ProductController productController = Get.find<ProductController>();
   final CartController cartController = Get.find<CartController>();
+  final FavoriteController favoriteController = Get.find<FavoriteController>();
+  final AuthController authController = Get.find<AuthController>();
   final TextEditingController searchController = TextEditingController();
   String selectedVariant = 'Semua';
 
@@ -30,18 +34,57 @@ class _HomeViewState extends State<HomeView> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xfff6f7fb),
+      backgroundColor: theme.scaffoldBackgroundColor,
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppColors.cream,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.brown.withOpacity(0.12),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _navButton(
+                icon: Icons.person_outline,
+                onTap: () => Get.toNamed(Routes.PROFILE),
+              ),
+              _navButton(
+                icon: Icons.favorite_border,
+                onTap: () => Get.toNamed(Routes.FAVORITES),
+              ),
+              _navButton(
+                icon: Icons.shopping_cart_outlined,
+                onTap: () => Get.toNamed(Routes.CART),
+              ),
+              if (authController.isAdmin)
+                _navButton(
+                  icon: Icons.dashboard_customize_outlined,
+                  onTap: () => Get.toNamed(Routes.ADMIN_DASHBOARD),
+                ),
+            ],
+          ),
+        ),
+      ),
       body: SafeArea(
         child: Column(
           children: [
             _buildHeader(theme),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-              child: _buildSearchBar(),
+              child: _buildSearchBar(theme),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: _buildFilterChips(),
+              child: _buildFilterChips(theme),
             ),
             const SizedBox(height: 6),
             Expanded(
@@ -68,7 +111,9 @@ class _HomeViewState extends State<HomeView> {
                   itemBuilder: (_, index) {
                     final product = filteredProducts[index];
                     return _ProductCard(
+                      theme: theme,
                       product: product,
+                      favoriteController: favoriteController,
                       onTap: () {
                         Get.toNamed(Routes.PRODUCT_DETAIL,
                             arguments: product);
@@ -78,7 +123,16 @@ class _HomeViewState extends State<HomeView> {
                         Get.snackbar(
                           'Keranjang',
                           '${product.name} ditambahkan',
-                          snackPosition: SnackPosition.BOTTOM,
+                          snackPosition: SnackPosition.TOP,
+                          backgroundColor:
+                              AppColors.cream.withOpacity(0.92),
+                          colorText: AppColors.darkBrown,
+                          margin: const EdgeInsets.all(14),
+                          borderRadius: 16,
+                          icon: const Icon(
+                            Icons.shopping_cart_outlined,
+                            color: AppColors.brown,
+                          ),
                         );
                       },
                     );
@@ -93,34 +147,23 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Widget _buildHeader(ThemeData theme) {
+    final surface = theme.cardTheme.color ?? Colors.white;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _circleButton(
-                icon: Icons.menu,
-                onTap: () => Get.toNamed(Routes.PROFILE),
-              ),
-              _circleButton(
-                icon: Icons.shopping_cart_outlined,
-                onTap: () => Get.toNamed(Routes.CART),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 4),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: surface,
               borderRadius: BorderRadius.circular(22),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: AppColors.brown.withOpacity(0.12),
                   blurRadius: 18,
                   offset: const Offset(0, 10),
                 ),
@@ -131,54 +174,33 @@ class _HomeViewState extends State<HomeView> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: const Color(0xfff4f2ff),
+                    color: AppColors.orange.withOpacity(0.14),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: const Icon(
                     Icons.emoji_food_beverage,
-                    color: Color(0xff6f5bd5),
+                    color: AppColors.brown,
                   ),
                 ),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Pumeow Pudding',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: const Color(0xff111827),
-                        ),
-                        overflow: TextOverflow.ellipsis,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Pumeow Pudding',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.darkBrown,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Dessert lembut untuk temani harimu',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: TextButton.icon(
-                    onPressed: () async {
-                      await NotificationService.showSampleNotification();
-                      Get.snackbar(
-                          'Notifikasi', 'Contoh notifikasi lokal dikirim.');
-                    },
-                    icon: const Icon(Icons.notifications_active_outlined),
-                    label: const Text('Tes Notifikasi'),
-                    style: TextButton.styleFrom(
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      visualDensity:
-                          const VisualDensity(horizontal: -2, vertical: -2),
                     ),
-                  ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Dessert lembut untuk temani harimu',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: AppColors.darkBrown.withOpacity(0.65),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -188,37 +210,54 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget _buildSearchBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+  Widget _buildSearchBar(ThemeData theme) {
+    final surface = theme.cardTheme.color ?? Colors.white;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(22),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              surface,
+              surface.withOpacity(0.9),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-        ],
-      ),
-      child: TextField(
-        controller: searchController,
-        onChanged: (_) => setState(() {}),
-        decoration: const InputDecoration(
-          hintText: 'Cari pudding...',
-          prefixIcon: Icon(Icons.search),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          border: Border.all(color: AppColors.brown.withOpacity(0.15)),
+          borderRadius: BorderRadius.circular(22),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.brown.withOpacity(0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: TextField(
+          controller: searchController,
+          onChanged: (_) => setState(() {}),
+          decoration: const InputDecoration(
+            hintText: 'Cari pudding...',
+            hintStyle: TextStyle(color: AppColors.outline),
+            prefixIcon: Icon(Icons.search, color: AppColors.darkBrown),
+            suffixIcon: Icon(Icons.tune_rounded, color: AppColors.darkBrown),
+            border: InputBorder.none,
+            contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 15),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildFilterChips() {
+  Widget _buildFilterChips(ThemeData theme) {
+    final surface = theme.cardTheme.color ?? Colors.white;
+
     return Obx(() {
       final variants = [
         'Semua',
-        ...productController.productList.map((p) => p.variant).toSet().toList(),
+        ...productController.productList.map((p) => p.variant).toSet(),
       ];
 
       return SingleChildScrollView(
@@ -232,18 +271,18 @@ class _HomeViewState extends State<HomeView> {
                 label: Text(variant),
                 selected: isSelected,
                 onSelected: (_) => setState(() => selectedVariant = variant),
-                selectedColor: const Color(0xffe8f1ff),
-                backgroundColor: Colors.white,
+                selectedColor: AppColors.orange.withOpacity(0.18),
+                backgroundColor: surface,
                 side: BorderSide(
                   color: isSelected
-                      ? const Color(0xff2563eb)
-                      : const Color(0xffe5e7eb),
+                      ? AppColors.orange
+                      : AppColors.outline.withOpacity(0.2),
                 ),
                 labelStyle: TextStyle(
                   fontWeight: FontWeight.w700,
                   color: isSelected
-                      ? const Color(0xff1d4ed8)
-                      : const Color(0xff374151),
+                      ? AppColors.darkBrown
+                      : AppColors.outline,
                 ),
               ),
             );
@@ -253,16 +292,19 @@ class _HomeViewState extends State<HomeView> {
     });
   }
 
-  Widget _circleButton({required IconData icon, required VoidCallback onTap}) {
+  Widget _circleButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
     return Ink(
       width: 44,
       height: 44,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.cream,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.07),
+            color: AppColors.brown.withOpacity(0.12),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -273,7 +315,36 @@ class _HomeViewState extends State<HomeView> {
         onTap: onTap,
         child: Icon(
           icon,
-          color: const Color(0xff111827),
+          color: AppColors.darkBrown,
+        ),
+      ),
+    );
+  }
+
+  Widget _navButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Ink(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.8),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.brown.withOpacity(0.1),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Icon(
+          icon,
+          color: AppColors.darkBrown,
+          size: 22,
         ),
       ),
     );
@@ -282,25 +353,31 @@ class _HomeViewState extends State<HomeView> {
 
 class _ProductCard extends StatelessWidget {
   const _ProductCard({
+    required this.theme,
     required this.product,
+    required this.favoriteController,
     required this.onTap,
     required this.onAddToCart,
   });
 
+  final ThemeData theme;
   final Product product;
+  final FavoriteController favoriteController;
   final VoidCallback onTap;
   final VoidCallback onAddToCart;
 
   @override
   Widget build(BuildContext context) {
+    final surface = theme.cardTheme.color ?? Colors.white;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: surface,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.brown.withOpacity(0.08),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -353,15 +430,30 @@ class _ProductCard extends StatelessWidget {
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xff2f8f5b),
+                              color: AppColors.darkBrown,
                             ),
                           ),
                         ),
                         const Spacer(),
+                        Obx(() {
+                          final isFavorite =
+                              favoriteController.isFavorite(product);
+                          return IconButton(
+                            onPressed: () => favoriteController.toggle(product),
+                            icon: Icon(
+                              isFavorite
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                            ),
+                            color: isFavorite
+                                ? AppColors.brown
+                                : AppColors.outline.withOpacity(0.7),
+                          );
+                        }),
                         IconButton(
                           onPressed: onAddToCart,
-                          icon: const Icon(Icons.favorite_border),
-                          color: const Color(0xff9ca3af),
+                          icon: const Icon(Icons.add_shopping_cart_outlined),
+                          color: AppColors.outline.withOpacity(0.8),
                         ),
                       ],
                     ),
@@ -371,7 +463,7 @@ class _ProductCard extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xff111827),
+                        color: AppColors.darkBrown,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -380,7 +472,7 @@ class _ProductCard extends StatelessWidget {
                         const Icon(
                           Icons.location_on_outlined,
                           size: 16,
-                          color: Color(0xff9ca3af),
+                          color: AppColors.outline,
                         ),
                         const SizedBox(width: 4),
                         Expanded(
@@ -389,7 +481,7 @@ class _ProductCard extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              color: Color(0xff6b7280),
+                              color: AppColors.outline,
                               fontSize: 13,
                             ),
                           ),
@@ -410,7 +502,7 @@ class _ProductCard extends StatelessWidget {
                           product.rating.toStringAsFixed(1),
                           style: const TextStyle(
                             fontWeight: FontWeight.w700,
-                            color: Color(0xff374151),
+                            color: AppColors.darkBrown,
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -418,7 +510,7 @@ class _ProductCard extends StatelessWidget {
                           'Rp${product.price.toStringAsFixed(0)}',
                           style: const TextStyle(
                             fontWeight: FontWeight.w900,
-                            color: Color(0xff1f6feb),
+                            color: AppColors.brown,
                             fontSize: 17,
                           ),
                         ),
@@ -430,8 +522,8 @@ class _ProductCard extends StatelessWidget {
                           ),
                           decoration: BoxDecoration(
                             color: product.isAvailable
-                                ? const Color(0xffe8f5e9)
-                                : const Color(0xffffebee),
+                                ? AppColors.orange.withOpacity(0.14)
+                                : AppColors.outline.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(30),
                           ),
                           child: Text(
@@ -439,8 +531,8 @@ class _ProductCard extends StatelessWidget {
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
                               color: product.isAvailable
-                                  ? const Color(0xff2e7d32)
-                                  : const Color(0xffc62828),
+                                  ? AppColors.darkBrown
+                                  : AppColors.outline,
                             ),
                           ),
                         ),

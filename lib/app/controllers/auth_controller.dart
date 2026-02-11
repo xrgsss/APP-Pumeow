@@ -17,12 +17,25 @@ class AuthController extends GetxController {
     supabase.auth.onAuthStateChange.listen((data) {
       final event = data.event;
 
-      if (event == AuthChangeEvent.signedIn) {
+      final hasSession = data.session != null;
+
+      if (event == AuthChangeEvent.signedIn ||
+          (event == AuthChangeEvent.initialSession && hasSession)) {
         Get.offAllNamed(Routes.HOME);
       } else if (event == AuthChangeEvent.signedOut) {
         Get.offAllNamed(Routes.LOGIN);
       }
     });
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
+
+    // If a session is already persisted locally, skip the login screen.
+    if (supabase.auth.currentSession != null) {
+      Get.offAllNamed(Routes.HOME);
+    }
   }
 
   // REGISTER
@@ -81,4 +94,7 @@ class AuthController extends GetxController {
   bool isLoggedIn() {
     return supabase.auth.currentUser != null;
   }
+
+  bool get isAdmin =>
+      supabase.auth.currentUser?.email?.toLowerCase() == 'admin@gmail.com';
 }

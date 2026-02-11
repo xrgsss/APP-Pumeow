@@ -42,6 +42,18 @@ class ProfileView extends StatelessWidget {
             label: 'Password',
             value: _maskedPassword(password),
           ),
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            onPressed: () async {
+              await authController.logout();
+            },
+            icon: const Icon(Icons.logout),
+            label: const Text('Logout'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+            ),
+          ),
           const SizedBox(height: 20),
           Text('Riwayat Pembelian', style: theme.textTheme.titleLarge),
           const SizedBox(height: 12),

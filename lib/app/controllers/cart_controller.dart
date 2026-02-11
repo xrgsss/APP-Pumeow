@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/material.dart';
 
 import '../models/product.dart';
 import '../services/supabase_service.dart';
@@ -97,9 +98,23 @@ class CartController extends GetxController {
         orderId != null
             ? 'Pesanan tercatat di Supabase (ID: $orderId)'
             : 'Pesanan tersimpan lokal.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: const Color(0xFFF3E6D0),
+        colorText: const Color(0xFF4B2E19),
+        margin: const EdgeInsets.all(12),
+        borderRadius: 12,
+        duration: const Duration(seconds: 4),
       );
     } catch (e) {
-      Get.snackbar('Checkout', 'Gagal memproses: $e');
+      Get.snackbar(
+        'Checkout',
+        'Gagal memproses: $e',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: const Color(0xFFFDECEC),
+        colorText: const Color(0xFF4B2E19),
+        margin: const EdgeInsets.all(12),
+        borderRadius: 12,
+      );
     } finally {
       isSubmitting.value = false;
     }
