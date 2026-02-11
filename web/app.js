@@ -175,6 +175,59 @@ function enableDragScroll(container) {
   );
 }
 
+function enableHorizontalDragScroll(scroller) {
+  if (!scroller || scroller.dataset.hDragBound === "1") return;
+  scroller.dataset.hDragBound = "1";
+
+  let isDown = false;
+  let moved = false;
+  let startX = 0;
+  let startLeft = 0;
+  let suppressClickUntil = 0;
+
+  scroller.addEventListener("mousedown", (event) => {
+    if (event.button !== 0) return;
+    isDown = true;
+    moved = false;
+    startX = event.clientX;
+    startLeft = scroller.scrollLeft;
+    scroller.classList.add("dragging-x");
+    event.preventDefault();
+  });
+
+  window.addEventListener("mousemove", (event) => {
+    if (!isDown) return;
+    const dx = event.clientX - startX;
+    if (Math.abs(dx) > 3) moved = true;
+    scroller.scrollLeft = startLeft - dx;
+  });
+
+  window.addEventListener("mouseup", () => {
+    if (!isDown) return;
+    isDown = false;
+    scroller.classList.remove("dragging-x");
+    if (moved) suppressClickUntil = Date.now() + 220;
+  });
+
+  scroller.addEventListener(
+    "click",
+    (event) => {
+      if (Date.now() < suppressClickUntil) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    },
+    true
+  );
+
+  scroller.addEventListener("wheel", (event) => {
+    if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+      scroller.scrollLeft += event.deltaY;
+      event.preventDefault();
+    }
+  }, { passive: false });
+}
+
 function showSnackbar(message) {
   snackbar.textContent = message;
   snackbar.className = "snackbar show";
@@ -408,10 +461,10 @@ function renderHome() {
   return `
     <section class="view">
       <article class="card header-card">
-        <div class="badge-icon">${icon("emoji_food_beverage")}</div>
-        <div>
-          <div style="font-size:1.8rem; font-weight:800;">Pumeow Pudding</div>
-          <div class="muted">Dessert lembut untuk temani harimu</div>
+        <div class="badge-icon"><img class="badge-logo" src="assets/images/logo.png" alt="Pumeow"></div>
+        <div class="brand-copy">
+          <div class="brand-title">Pumeow Pudding</div>
+          <div class="brand-subtitle muted">Dessert lembut untuk temani harimu</div>
         </div>
       </article>
 
@@ -682,6 +735,7 @@ function render() {
 
   const renderer = viewMap[route] || renderLogin;
   appRoot.innerHTML = renderer();
+  appRoot.querySelectorAll(".row-scroll").forEach(enableHorizontalDragScroll);
 }
 
 function refreshLocation() {

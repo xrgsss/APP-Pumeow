@@ -134,9 +134,9 @@ body {
 .view {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   min-height: 100%;
-  padding-bottom: 8px;
+  padding-bottom: 6px;
 }
 
 .page-title {
@@ -152,7 +152,7 @@ body {
 .card {
   background: var(--white);
   border-radius: 16px;
-  padding: 12px;
+  padding: 10px;
   box-shadow: 0 8px 18px rgba(66, 51, 36, 0.1);
 }
 
@@ -293,10 +293,11 @@ body {
 }
 
 .header-card {
-  padding: 16px;
+  padding: 12px;
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
+  border-radius: 18px;
 }
 
 .header-card > div:last-child {
@@ -304,41 +305,73 @@ body {
 }
 
 .badge-icon {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
   display: grid;
   place-items: center;
   background: rgba(226, 139, 58, 0.2);
   color: var(--brown);
+  flex: 0 0 auto;
+}
+
+.badge-logo {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.brand-copy {
+  min-width: 0;
+}
+
+.brand-title {
+  font-size: 0.92rem;
+  font-weight: 800;
+  line-height: 1.12;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.brand-subtitle {
+  margin-top: 2px;
+  font-size: 0.7rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .search-box {
   border-radius: 14px;
   background: var(--white);
   border: 1px solid rgba(47, 33, 22, 0.15);
-  padding: 10px 12px;
+  padding: 8px 10px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .search-box input {
   width: 100%;
   border: none;
   outline: none;
-  font-size: 0.95rem;
+  font-size: 0.86rem;
   font-family: inherit;
 }
 
 .row-scroll {
   display: flex;
-  overflow: auto;
-  flex-wrap: wrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
   gap: 8px;
   padding-bottom: 4px;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  white-space: nowrap;
+  touch-action: pan-x;
 }
 
 .row-scroll::-webkit-scrollbar {
@@ -346,15 +379,21 @@ body {
   height: 0;
 }
 
+.row-scroll.dragging-x {
+  cursor: grabbing;
+  user-select: none;
+}
+
 .chip {
   border: 1px solid var(--stroke);
   background: var(--white);
   border-radius: 10px;
-  padding: 8px 12px;
+  padding: 7px 11px;
   font-weight: 700;
-  font-size: 0.84rem;
+  font-size: 0.8rem;
   white-space: nowrap;
   cursor: pointer;
+  flex: 0 0 auto;
 }
 
 .chip.active {
@@ -366,17 +405,17 @@ body {
 .product-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding-bottom: 78px;
+  gap: 8px;
+  padding-bottom: 74px;
 }
 
 .product-card {
   background: var(--white);
   border-radius: 16px;
-  padding: 10px;
+  padding: 8px;
   display: grid;
-  grid-template-columns: 98px minmax(0, 1fr);
-  gap: 10px;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 8px;
   box-shadow: 0 8px 16px rgba(66, 51, 36, 0.08);
   width: 100%;
 }
@@ -386,8 +425,8 @@ body {
 }
 
 .product-image {
-  width: 98px;
-  height: 88px;
+  width: 92px;
+  height: 82px;
   border-radius: 12px;
   object-fit: cover;
   background: #e5e7eb;
@@ -408,7 +447,7 @@ body {
   border-radius: 999px;
   background: var(--brown-soft-2);
   color: var(--dark-brown);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 800;
   max-width: 100%;
   white-space: nowrap;
@@ -431,7 +470,7 @@ body {
 }
 
 .icon-btn .material-symbols-outlined {
-  font-size: 22px;
+  font-size: 20px;
 }
 
 .icon-btn.active {
@@ -441,13 +480,13 @@ body {
 .price {
   color: var(--brown);
   font-weight: 800;
-  font-size: clamp(1rem, 1.1rem + 0.6vw, 1.45rem);
+  font-size: 0.92rem;
 }
 
 .stock-pill {
   padding: 4px 8px;
   border-radius: 999px;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
   background: var(--brown-soft-2);
   color: var(--dark-brown);
@@ -459,7 +498,7 @@ body {
   bottom: 0;
   background: #f3e6d0;
   border-radius: 16px;
-  padding: 8px;
+  padding: 7px;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
@@ -470,9 +509,9 @@ body {
 .nav-btn {
   border: none;
   background: rgba(255, 255, 255, 0.85);
-  border-radius: 12px;
-  padding: 8px 4px 7px;
-  font-size: 0.72rem;
+  border-radius: 11px;
+  padding: 7px 4px 6px;
+  font-size: 0.68rem;
   font-weight: 700;
   cursor: pointer;
   color: var(--dark-brown);
@@ -492,7 +531,7 @@ body {
 }
 
 .nav-btn .material-symbols-outlined {
-  font-size: 18px;
+  font-size: 17px;
 }
 
 .list-item {
@@ -559,7 +598,7 @@ body {
 }
 
 .small {
-  font-size: 0.82rem;
+  font-size: 0.75rem;
 }
 
 .table-list {
@@ -672,7 +711,9 @@ body {
   }
 
   .row-scroll {
-    flex-wrap: wrap;
-    overflow: visible;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
+
 }
