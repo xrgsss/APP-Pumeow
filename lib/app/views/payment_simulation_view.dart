@@ -49,7 +49,7 @@ class PaymentSimulationView extends StatelessWidget {
               onPressed: cartController.isSubmitting.value
                   ? null
                   : () async {
-                      await cartController.checkout(
+                      final orderId = await cartController.checkout(
                         method,
                         lat: lat,
                         lng: lng,
@@ -57,7 +57,10 @@ class PaymentSimulationView extends StatelessWidget {
                       );
                       Get.offAllNamed(
                         Routes.PAYMENT_SUCCESS,
-                        arguments: {'method': method},
+                        arguments: {
+                          'method': method,
+                          'orderId': orderId,
+                        },
                       );
                     },
               child: cartController.isSubmitting.value

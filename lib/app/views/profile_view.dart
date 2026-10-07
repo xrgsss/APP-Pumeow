@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/cart_controller.dart';
@@ -70,6 +70,7 @@ class ProfileView extends StatelessWidget {
                       e.quantity,
                       method: e.method,
                       date: e.createdAt,
+                      orderId: e.orderId,
                     ),
                   )
                   .toList(),
@@ -127,7 +128,7 @@ class ProfileView extends StatelessWidget {
   }
 
   Widget _historyTile(Product product, int qty,
-      {required String method, required DateTime date}) {
+      {required String method, required DateTime date, String? orderId}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
@@ -142,48 +143,79 @@ class ProfileView extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xffe8f1ff),
-              borderRadius: BorderRadius.circular(30),
-            ),
-            child: Text(
-              product.variant,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                color: Color(0xff1d4ed8),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  product.name,
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xffe8f1ff),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: Text(
+                  product.variant,
                   style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 16,
-                    color: Color(0xff111827),
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xff1d4ed8),
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'Qty: $qty - Rp${product.price.toStringAsFixed(0)}',
-                  style: const TextStyle(color: Color(0xff6b7280)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      product.name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                        color: Color(0xff111827),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Qty: $qty - Rp${product.price.toStringAsFixed(0)}',
+                      style: const TextStyle(color: Color(0xff6b7280)),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Metode: $method | ${_fmtDate(date)}',
+                      style: const TextStyle(color: Color(0xff9ca3af), fontSize: 12),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 2),
+              ),
+            ],
+          ),
+          if (orderId != null && orderId.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
                 Text(
-                  'Metode: $method | ${_fmtDate(date)}',
-                  style: const TextStyle(color: Color(0xff9ca3af), fontSize: 12),
+                  orderId,
+                  style: const TextStyle(fontSize: 11, fontFamily: 'monospace', color: Colors.grey),
+                ),
+                TextButton.icon(
+                  onPressed: () {
+                    Get.toNamed(
+                      Routes.ORDER_TRACKING,
+                      arguments: {'orderId': orderId},
+                    );
+                  },
+                  icon: const Icon(Icons.local_shipping, size: 16),
+                  label: const Text('Lacak Pesanan', style: TextStyle(fontSize: 12)),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    minimumSize: const Size(60, 30),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                 ),
               ],
             ),
-          ),
+          ],
         ],
       ),
     );

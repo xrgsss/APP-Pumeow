@@ -14,4 +14,7 @@ abstract class Routes {
   static const PAYMENT_SIMULATION = '/payment_simulation';
   static const PAYMENT_SUCCESS = '/payment_success';
   static const ADMIN_DASHBOARD = '/admin_dashboard';
+  static const FORGOT_PASSWORD = '/forgot-password';
+  static const RESET_PASSWORD = '/reset-password';
+  static const ORDER_TRACKING = '/orders';
 }

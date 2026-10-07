@@ -96,14 +96,19 @@ class CheckoutView extends StatelessWidget {
     );
   }
 
-  void _handlePickup() {
+  void _handlePickup() async {
     if (cartController.cartItems.isEmpty) {
       Get.snackbar('Info', 'Keranjang masih kosong');
       return;
     }
-    cartController.checkout('Ambil di tempat');
-    Get.snackbar('Pickup', 'Pesanan dicatat. Silakan ambil di lokasi toko.');
-    Get.offAllNamed(Routes.HOME);
+    final orderId = await cartController.checkout('Ambil di tempat');
+    Get.offAllNamed(
+      Routes.PAYMENT_SUCCESS,
+      arguments: {
+        'method': 'Ambil di tempat',
+        'orderId': orderId,
+      },
+    );
   }
 
   void _handleDelivery() {

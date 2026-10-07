@@ -16,12 +16,16 @@ class AuthController extends GetxController {
     // Auto handling login/logout
     supabase.auth.onAuthStateChange.listen((data) {
       final event = data.event;
-
       final hasSession = data.session != null;
 
-      if (event == AuthChangeEvent.signedIn ||
+      if (event == AuthChangeEvent.passwordRecovery) {
+        Get.toNamed(Routes.RESET_PASSWORD);
+      } else if (event == AuthChangeEvent.signedIn ||
           (event == AuthChangeEvent.initialSession && hasSession)) {
-        Get.offAllNamed(Routes.HOME);
+        if (Get.currentRoute != Routes.RESET_PASSWORD &&
+            Get.currentRoute != Routes.FORGOT_PASSWORD) {
+          Get.offAllNamed(Routes.HOME);
+        }
       } else if (event == AuthChangeEvent.signedOut) {
         Get.offAllNamed(Routes.LOGIN);
       }
@@ -97,4 +101,44 @@ class AuthController extends GetxController {
 
   bool get isAdmin =>
       supabase.auth.currentUser?.email?.toLowerCase() == 'admin@gmail.com';
+
+  // FORGOT PASSWORD
+  Future<bool> sendPasswordResetEmail(String email) async {
+    try {
+      isLoading.value = true;
+      await supabase.auth.resetPasswordForEmail(
+        email,
+        redirectTo: 'io.supabase.pumeow://reset-callback/',
+      );
+      // For security, always show generic success
+      return true;
+    } on AuthException catch (e) {
+      Get.snackbar("Info", e.message);
+      return false;
+    } catch (_) {
+      return true;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // RESET PASSWORD
+  Future<bool> updatePassword(String newPassword) async {
+    try {
+      isLoading.value = true;
+      await supabase.auth.updateUser(
+        UserAttributes(password: newPassword),
+      );
+      Get.snackbar("Sukses", "Password berhasil diubah. Silakan login kembali.");
+      return true;
+    } on AuthException catch (e) {
+      Get.snackbar("Gagal", e.message);
+      return false;
+    } catch (e) {
+      Get.snackbar("Gagal", "Terjadi kesalahan: $e");
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
 }

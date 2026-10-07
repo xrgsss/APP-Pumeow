@@ -14,6 +14,9 @@ import '../views/payment_simulation_view.dart';
 import '../views/payment_success_view.dart';
 import '../views/admin_dashboard_view.dart';
 import '../views/favorites_view.dart';
+import '../views/forgot_password_view.dart';
+import '../views/reset_password_view.dart';
+import '../views/order_tracking_view.dart';
 
 part 'app_routes.dart';
 
@@ -29,6 +32,21 @@ class AppPages {
     GetPage(
       name: Routes.REGISTER,
       page: () => RegisterView(),
+      binding: InitialBinding(),
+    ),
+    GetPage(
+      name: Routes.FORGOT_PASSWORD,
+      page: () => const ForgotPasswordView(),
+      binding: InitialBinding(),
+    ),
+    GetPage(
+      name: Routes.RESET_PASSWORD,
+      page: () => const ResetPasswordView(),
+      binding: InitialBinding(),
+    ),
+    GetPage(
+      name: Routes.ORDER_TRACKING,
+      page: () => const OrderTrackingView(),
       binding: InitialBinding(),
     ),
     GetPage(

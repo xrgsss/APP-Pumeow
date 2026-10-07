@@ -48,18 +48,18 @@ class CartController extends GetxController {
     cartItems.refresh();
   }
 
-  Future<void> checkout(
+  Future<String?> checkout(
     String method, {
     double? lat,
     double? lng,
     bool syncToSupabase = true,
   }) async {
-    if (cartItems.isEmpty) return;
+    if (cartItems.isEmpty) return null;
 
     final user = _supabase.auth.currentUser;
     if (syncToSupabase && user == null) {
       Get.snackbar('Login', 'Silakan login terlebih dahulu untuk checkout.');
-      return;
+      return null;
     }
 
     isSubmitting.value = true;
@@ -76,6 +76,8 @@ class CartController extends GetxController {
           lng: lng,
         );
       }
+
+      orderId ??= 'ORD-${now.millisecondsSinceEpoch}';
 
       purchaseHistory.addAll(
         cartItems.entries.map(
@@ -94,10 +96,8 @@ class CartController extends GetxController {
       cartItems.refresh();
 
       Get.snackbar(
-        'Checkout',
-        orderId != null
-            ? 'Pesanan tercatat di Supabase (ID: $orderId)'
-            : 'Pesanan tersimpan lokal.',
+        'Checkout Berhasil',
+        'Pesanan tercatat (ID: $orderId)',
         snackPosition: SnackPosition.TOP,
         backgroundColor: const Color(0xFFF3E6D0),
         colorText: const Color(0xFF4B2E19),
@@ -105,6 +105,7 @@ class CartController extends GetxController {
         borderRadius: 12,
         duration: const Duration(seconds: 4),
       );
+      return orderId;
     } catch (e) {
       Get.snackbar(
         'Checkout',
@@ -115,6 +116,7 @@ class CartController extends GetxController {
         margin: const EdgeInsets.all(12),
         borderRadius: 12,
       );
+      return null;
     } finally {
       isSubmitting.value = false;
     }

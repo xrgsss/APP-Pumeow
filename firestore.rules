@@ -1,0 +1,69 @@
+rules_version = '2';
+// ====================================================================
+// FIRESTORE SECURITY RULES UNTUK PUMEOW
+// Cara pakai:
+//   1. Buka https://console.firebase.google.com
+//   2. Pilih project kamu → Firestore Database → Rules
+//   3. Copy-paste rules di bawah ini → Publish
+// ====================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper: cek apakah user adalah admin ──────────────────────
+    function isAdmin() {
+      return request.auth != null &&
+             request.auth.token.email == "admin@gmail.com";
+    }
+
+    // ── Helper: cek apakah user sudah login ───────────────────────
+    function isLoggedIn() {
+      return request.auth != null;
+    }
+
+    // ── ORDERS ────────────────────────────────────────────────────
+    match /orders/{orderId} {
+      // READ: Customer hanya bisa baca pesanan miliknya sendiri,
+      //       Admin bisa baca semua
+      allow read: if isAdmin() ||
+                     (isLoggedIn() && resource.data.user_id == request.auth.uid) ||
+                     (isLoggedIn() && resource.data.buyer_email == request.auth.token.email);
+
+      // CREATE: Hanya user yang login, dan user_id harus miliknya sendiri
+      allow create: if isLoggedIn() &&
+                       (request.resource.data.user_id == request.auth.uid || isAdmin());
+
+      // UPDATE: Customer hanya boleh update ke status 'completed' (konfirmasi terima)
+      //         Admin boleh update apa saja
+      allow update: if isAdmin() ||
+                       (isLoggedIn() &&
+                        resource.data.user_id == request.auth.uid &&
+                        request.resource.data.status == "completed");
+
+      // DELETE: Hanya admin
+      allow delete: if isAdmin();
+
+      // ── ORDER ITEMS (subkoleksi) ─────────────────────────────────
+      match /items/{itemId} {
+        // READ: Ikuti aturan parent order
+        allow read: if isAdmin() ||
+                       (isLoggedIn() && get(/databases/$(database)/documents/orders/$(orderId)).data.user_id == request.auth.uid);
+
+        // WRITE: Hanya saat order baru dibuat (oleh pemilik/admin)
+        allow create: if isLoggedIn() &&
+                         (get(/databases/$(database)/documents/orders/$(orderId)).data.user_id == request.auth.uid || isAdmin());
+
+        allow update, delete: if isAdmin();
+      }
+    }
+
+    // ── PRODUCTS ──────────────────────────────────────────────────
+    match /products/{productId} {
+      // READ: Semua orang (termasuk tanpa login) bisa melihat produk
+      allow read: if true;
+
+      // WRITE: Hanya admin
+      allow write: if isAdmin();
+    }
+  }
+}

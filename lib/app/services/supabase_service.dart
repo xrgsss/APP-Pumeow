@@ -39,8 +39,54 @@ class SupabaseService {
 
   Future<List<Map<String, dynamic>>> fetchOrders() async {
     final data = await _client.from('orders').select(
-        'id, user_id, buyer_email, method, total, created_at, order_items (product_id, quantity, price)');
+        '*, order_items (product_id, quantity, price)');
     return (data as List<dynamic>).cast<Map<String, dynamic>>();
+  }
+
+  Future<Map<String, dynamic>?> fetchOrderById(String orderId) async {
+    try {
+      final data = await _client
+          .from('orders')
+          .select('*, order_items (product_id, quantity, price)')
+          .eq('id', orderId)
+          .maybeSingle();
+      if (data == null) return null;
+      return Map<String, dynamic>.from(data);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<bool> updateOrderStatus(
+    String orderId,
+    String status, {
+    DateTime? deliveredAt,
+    String? courier,
+    String? trackingNumber,
+  }) async {
+    try {
+      final user = _client.auth.currentUser;
+      final payload = <String, dynamic>{'status': status};
+      if (deliveredAt != null) {
+        payload['delivered_at'] = deliveredAt.toIso8601String();
+      }
+      if (courier != null) {
+        payload['courier'] = courier;
+      }
+      if (trackingNumber != null) {
+        payload['tracking_number'] = trackingNumber;
+      }
+
+      // Check ownership if user is not admin
+      var query = _client.from('orders').update(payload).eq('id', orderId);
+      if (user?.email?.toLowerCase() != 'admin@gmail.com' && user?.id != null) {
+        query = query.eq('user_id', user!.id);
+      }
+      await query;
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<String?> createOrder({
@@ -60,6 +106,7 @@ class SupabaseService {
       'buyer_email': user?.email,
       'method': method,
       'total': total,
+      'status': 'paid',
       'lat': lat,
       'lng': lng,
     };
