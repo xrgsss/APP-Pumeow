@@ -43,3 +43,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Node.js / Jest (pengujian website Modul 4)
+node_modules/
+npm-debug.log*
+jest-coverage/
+
+# File kunci sementara Microsoft Word
+~$*
