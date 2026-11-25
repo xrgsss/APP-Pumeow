@@ -1,0 +1,67 @@
+PASS tests/unit/login.service.unit.test.js
+  signInWithEmail() - unit test service login
+    √ Stub: mengembalikan hasil sukses yang deterministik (5 ms)
+    √ Mock: memanggil signInWithEmailAndPassword tepat sekali dengan argumen yang benar (1 ms)
+    √ Mock: memetakan auth/wrong-password menjadi pesan 'Password salah.' (5 ms)
+    √ Mock: memakai pesan exception sebagai fallback untuk kode error tak dikenal (1 ms)
+    √ Mock: respons sukses tanpa objek user dianggap gagal (3 ms)
+    √ Dummy/Tidak tersedia: auth null tidak memanggil Firebase dan mengembalikan pesan konfigurasi (2 ms)
+    √ Fake: autentikasi berhasil untuk akun yang terdaftar di penyimpanan in-memory (2 ms)
+    √ Fake: autentikasi gagal untuk password yang tidak cocok (1 ms)
+  mapAuthError() - unit test pemetaan kode error
+    √ memetakan auth/user-not-found ke pesan yang sesuai
+    √ memetakan auth/invalid-email ke pesan yang sesuai (1 ms)
+    √ memetakan auth/invalid-credential ke pesan yang sesuai (1 ms)
+    √ memetakan auth/too-many-requests ke pesan yang sesuai (1 ms)
+    √ memakai fallback bawaan untuk kode yang tidak dikenal (1 ms)
+    √ memakai fallback kustom bila diberikan (1 ms)
+
+PASS tests/unit/login.validation.unit.test.js
+  validateLoginInput() - unit test validasi login
+    √ menerima kredensial valid dan mengembalikan salinan yang sudah di-trim (3 ms)
+    √ menolak email kosong dengan pesan 'Email wajib diisi' (1 ms)
+    √ menolak email yang hanya berisi spasi (1 ms)
+    √ menolak format email tidak valid: user@@gmail (dua karakter @) (1 ms)
+    √ menolak format email tidak valid: user@gmail (tanpa domain bertitik)
+    √ menolak format email tidak valid: user gmail.com (mengandung spasi)
+    √ menolak format email tidak valid: @gmail.com (tanpa nama pengguna)
+    √ menolak format email tidak valid: user@.com (domain kosong) (1 ms)
+    √ menolak password kosong dengan pesan 'Password wajib diisi'
+    √ menolak password yang hanya berisi spasi setelah trim
+    √ menolak password lima karakter
+    √ menerima password tepat enam karakter (batas bawah inklusif)
+    √ melaporkan kedua kesalahan sekaligus saat email dan password kosong
+    √ tidak melempar error saat menerima null atau undefined (1 ms)
+    √ karakterisasi: pola email longgar meloloskan a@b.c (1 ms)
+
+PASS tests/unit/auth.services.unit.test.js
+  firebaseResetPasswordForEmail() - unit test kirim email reset
+    √ Stub: mengembalikan true saat pengiriman berhasil (6 ms)
+    √ Mock: memanggil sendPasswordResetEmail dengan email yang benar (3 ms)
+    √ Mock: kegagalan Firebase tidak dibocorkan dan tetap mengembalikan true (2 ms)
+    √ mengembalikan true tanpa memanggil Firebase saat auth tidak tersedia (6 ms)
+    √ memakai fbAuth bawaan saat argumen auth tidak diberikan (1 ms)
+  firebaseUpdateUserPassword() - unit test ubah password
+    √ Stub: mengembalikan success saat currentUser tersedia (1 ms)
+    √ Mock: meneruskan password baru ke currentUser.updatePassword (1 ms)
+    √ Mock: error dari Firebase dilempar ulang setelah dicatat (21 ms)
+    √ tidak memanggil updatePassword saat tidak ada user yang login (4 ms)
+    √ mengembalikan success saat objek auth tidak tersedia (2 ms)
+    √ memakai fbAuth bawaan saat argumen auth tidak diberikan (1 ms)
+  formatPrice()/maskPassword() - unit test helper murni
+    √ formatPrice memformat angka dengan pemisah ribuan (35 ms)
+    √ formatPrice menangani nilai kosong sebagai nol (3 ms)
+    √ maskPassword menyamarkan password hingga 12 karakter (2 ms)
+    √ maskPassword mengembalikan teks default untuk nilai kosong (3 ms)
+  saveState()/loadState() - unit test persistensi dengan Fake localStorage
+    √ Fake: menyimpan lalu memulihkan state secara utuh (12 ms)
+    √ Fake: tidak mengubah state saat storage kosong (3 ms)
+    √ Fake: JSON rusak diabaikan tanpa melempar error (2 ms)
+    √ Fake: produk tanpa stok dinormalisasi menjadi stok 15 dan tetap tersedia (2 ms)
+    √ Fake: array favorit dari JSON dipulihkan sebagai Set (2 ms)
+
+Test Suites: 3 passed, 3 total
+Tests:       49 passed, 49 total
+Snapshots:   0 total
+Time:        7.359 s, estimated 9 s
+Ran all test suites matching /tests\\unit/i.

@@ -1,0 +1,19 @@
+Focused coverage - fungsi yang diuji unit test
+Sumber: coverage/coverage-final.json (Istanbul via Jest)
+
+Function                                Lines      Stmts     Branch   Stmt %  Branch %
+----------------------------------------------------------------------------------------
+formatPrice                         328-330      1/1       2/2     100.00%   100.00%
+saveState                           336-348      2/2       1/1     100.00%   100.00%
+loadState                           350-374     15/15     23/23    100.00%   100.00%
+maskPassword                        376-379      3/3       2/2     100.00%   100.00%
+mapAuthError                        396-398      1/1       3/3     100.00%   100.00%
+validateLoginInput                  405-430     16/16     12/12    100.00%   100.00%
+signInWithEmail                     438-468      9/9       8/8     100.00%   100.00%
+firebaseResetPasswordForEmail       582-592      5/5       3/3     100.00%   100.00%
+firebaseUpdateUserPassword          595-606      7/7       5/5     100.00%   100.00%
+----------------------------------------------------------------------------------------
+TOTAL                                           59/59     59/59    100.00%   100.00%
+
+Catatan: angka overall app.js lebih rendah karena seluruh view/UI
+lain tidak menjadi objek unit test pada modul ini.

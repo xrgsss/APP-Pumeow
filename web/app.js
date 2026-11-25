@@ -333,7 +333,7 @@ function icon(name, className = "") {
   return `<span class="material-symbols-outlined ${className}" aria-hidden="true">${name}</span>`;
 }
 
-function saveState() {
+function saveState(storage = localStorage) {
   const data = {
     auth: state.auth,
     cart: state.cart,
@@ -344,11 +344,11 @@ function saveState() {
     search: state.search,
     products: state.products
   };
-  localStorage.setItem("pumeowWebState", JSON.stringify(data));
+  storage.setItem("pumeowWebState", JSON.stringify(data));
 }
 
-function loadState() {
-  const raw = localStorage.getItem("pumeowWebState");
+function loadState(storage = localStorage) {
+  const raw = storage.getItem("pumeowWebState");
   if (!raw) return;
   try {
     const data = JSON.parse(raw);
@@ -376,6 +376,95 @@ function loadState() {
 function maskPassword(value) {
   if (!value) return "Belum ada data";
   return "*".repeat(Math.min(value.length, 12));
+}
+
+// ─── Pure validation & auth helpers (dapat diuji unit) ──────────
+// Fungsi-fungsi di bawah ini sengaja dipisahkan dari listener submit agar
+// logika dapat diuji tanpa DOM. Listener tetap memakai fungsi yang sama,
+// sehingga perilaku aplikasi tidak berubah.
+const EMAIL_PATTERN = /^\S+@\S+\.\S+$/;
+
+const AUTH_ERROR_MESSAGES = {
+  "auth/operation-not-allowed": "Provider Email/Password belum diaktifkan di Firebase Console. Buka Authentication > Sign-in method lalu Enable Email/Password.",
+  "auth/user-not-found": "Email belum terdaftar. Silakan daftar akun baru terlebih dahulu.",
+  "auth/wrong-password": "Password salah.",
+  "auth/invalid-email": "Format email tidak valid.",
+  "auth/too-many-requests": "Terlalu banyak percobaan gagal. Silakan coba beberapa saat lagi.",
+  "auth/invalid-credential": "Email atau password salah."
+};
+
+function mapAuthError(code, fallback = "Login gagal.") {
+  return AUTH_ERROR_MESSAGES[code] || fallback;
+}
+
+/**
+ * Memvalidasi kredensial login tanpa menyentuh DOM.
+ * @returns {{ valid: boolean, errors: { email: string, password: string },
+ *            credentials: { email: string, password: string } }}
+ */
+function validateLoginInput(emailValue, passwordValue) {
+  const credentials = {
+    email: String(emailValue ?? "").trim(),
+    password: String(passwordValue ?? "").trim()
+  };
+  const errors = { email: "", password: "" };
+  let valid = true;
+
+  if (!credentials.email) {
+    errors.email = "Email wajib diisi";
+    valid = false;
+  } else if (!EMAIL_PATTERN.test(credentials.email)) {
+    errors.email = "Format email tidak valid";
+    valid = false;
+  }
+
+  if (!credentials.password) {
+    errors.password = "Password wajib diisi";
+    valid = false;
+  } else if (credentials.password.length < 6) {
+    errors.password = "Password minimal 6 karakter";
+    valid = false;
+  }
+
+  return { valid, errors, credentials };
+}
+
+/**
+ * Menjalankan autentikasi email/password terhadap objek auth yang diberikan.
+ * Objek auth diinjeksi agar mudah diganti test double.
+ * @returns {Promise<{ ok: boolean, user: object|null, code: string|null,
+ *                     message: string }>}
+ */
+async function signInWithEmail(auth, email, password) {
+  if (!auth) {
+    return {
+      ok: false,
+      user: null,
+      code: "auth/not-initialized",
+      message: "Firebase belum terhubung. Periksa konfigurasi Firebase."
+    };
+  }
+
+  try {
+    const cred = await auth.signInWithEmailAndPassword(email, password);
+    if (!cred?.user) {
+      return {
+        ok: false,
+        user: null,
+        code: "auth/invalid-user",
+        message: "Login gagal. Akun tidak valid."
+      };
+    }
+    return { ok: true, user: cred.user, code: null, message: "" };
+  } catch (err) {
+    console.error("Firebase Login Error:", err);
+    return {
+      ok: false,
+      user: null,
+      code: err?.code || "auth/unknown",
+      message: mapAuthError(err?.code, err?.message || "Login gagal.")
+    };
+  }
 }
 
 function currentProduct() {
@@ -490,10 +579,10 @@ async function firebaseDeleteProduct(productId) {
 // -------------------------------------------------------------
 
 /** Kirim email reset password via Firebase Auth */
-async function firebaseResetPasswordForEmail(email) {
-  if (fbAuth) {
+async function firebaseResetPasswordForEmail(email, auth = fbAuth) {
+  if (auth) {
     try {
-      await fbAuth.sendPasswordResetEmail(email);
+      await auth.sendPasswordResetEmail(email);
     } catch (err) {
       // Log tapi tetap return success agar tidak bocor info akun
       console.warn("Firebase resetPassword warning:", err.message);
@@ -503,10 +592,10 @@ async function firebaseResetPasswordForEmail(email) {
 }
 
 /** Update password user yang sedang login via Firebase Auth */
-async function firebaseUpdateUserPassword(newPassword) {
-  if (fbAuth && fbAuth.currentUser) {
+async function firebaseUpdateUserPassword(newPassword, auth = fbAuth) {
+  if (auth && auth.currentUser) {
     try {
-      await fbAuth.currentUser.updatePassword(newPassword);
+      await auth.currentUser.updatePassword(newPassword);
       return { success: true };
     } catch (err) {
       console.warn("Firebase updatePassword error:", err);
@@ -2267,74 +2356,43 @@ document.addEventListener("submit", async (event) => {
     const emailError = document.getElementById("loginEmailError");
     const passError = document.getElementById("loginPasswordError");
 
-    const email = emailInput.value.trim();
-    const password = passInput.value.trim();
+    const validation = validateLoginInput(emailInput.value, passInput.value);
+    const { email, password } = validation.credentials;
 
-    emailError.textContent = "";
-    passError.textContent = "";
+    emailError.textContent = validation.errors.email;
+    passError.textContent = validation.errors.password;
 
-    let valid = true;
-    if (!email) {
-      emailError.textContent = "Email wajib diisi";
-      valid = false;
-    } else if (!/^\S+@\S+\.\S+$/.test(email)) {
-      emailError.textContent = "Format email tidak valid";
-      valid = false;
-    }
-
-    if (!password) {
-      passError.textContent = "Password wajib diisi";
-      valid = false;
-    } else if (password.length < 6) {
-      passError.textContent = "Password minimal 6 karakter";
-      valid = false;
-    }
-
-    if (!valid) return;
+    if (!validation.valid) return;
 
     state.auth.isLoading = true;
     render();
 
-    // Pastikan Firebase Auth sudah aktif
+    // Pastikan Firebase Auth sudah aktif sebelum memanggil service.
     if (!fbAuth) {
       state.auth.isLoading = false;
-      const emailError = document.getElementById("loginEmailError");
-      if (emailError) emailError.textContent = "Firebase belum terhubung. Periksa konfigurasi Firebase.";
-      render();
-      return;
-    }
-
-    // Validasi login langsung ke Firebase Auth
-    let authUser = null;
-    try {
-      const cred = await fbAuth.signInWithEmailAndPassword(email, password);
-      if (cred?.user) {
-        authUser = cred.user;
+      const currentEmailError = document.getElementById("loginEmailError");
+      if (currentEmailError) {
+        currentEmailError.textContent = "Firebase belum terhubung. Periksa konfigurasi Firebase.";
       }
-    } catch (err) {
-      console.error("Firebase Login Error:", err);
-      state.auth.isLoading = false;
-      const emailError = document.getElementById("loginEmailError");
-      const errMap = {
-        "auth/operation-not-allowed": "Provider Email/Password belum diaktifkan di Firebase Console. Buka Authentication > Sign-in method lalu Enable Email/Password.",
-        "auth/user-not-found": "Email belum terdaftar. Silakan daftar akun baru terlebih dahulu.",
-        "auth/wrong-password": "Password salah.",
-        "auth/invalid-email": "Format email tidak valid.",
-        "auth/too-many-requests": "Terlalu banyak percobaan gagal. Silakan coba beberapa saat lagi.",
-        "auth/invalid-credential": "Email atau password salah."
-      };
-      if (emailError) emailError.textContent = errMap[err.code] || err.message || "Login gagal.";
       render();
       return;
     }
 
-    if (!authUser) {
+    const loginResult = await signInWithEmail(
+      fbAuth,
+      email,
+      password
+    );
+
+    if (!loginResult.ok) {
       state.auth.isLoading = false;
-      const emailError = document.getElementById("loginEmailError");
-      if (emailError) emailError.textContent = "Login gagal. Akun tidak valid.";
+      const currentEmailError = document.getElementById("loginEmailError");
+      if (currentEmailError) currentEmailError.textContent = loginResult.message;
       render();
       return;
     }
+
+    const authUser = loginResult.user;
 
     state.auth.email = email;
     state.auth.password = password;

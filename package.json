@@ -5,6 +5,8 @@
   "description": "Pengujian integration fitur Login pada website APP-Pumeow (web/app.js)",
   "scripts": {
     "test": "jest",
+    "test:unit": "jest tests/unit",
+    "test:integration": "jest tests/login",
     "test:coverage": "jest --coverage"
   },
   "dependencies": {

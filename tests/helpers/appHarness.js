@@ -25,7 +25,8 @@ const instrumenter = createInstrumenter({
 const INSTRUMENTED_SOURCE = instrumenter.instrumentSync(APP_SOURCE, APP_PATH);
 
 const EXPORT_HOOK =
-  "\n;globalThis.__pumeow = { state, render, navigate, saveState, showSnackbar, ROUTES };";
+  "\n;globalThis.__pumeow = { state, render, navigate, saveState, loadState, showSnackbar, ROUTES," +
+  " validateLoginInput, signInWithEmail, mapAuthError, maskPassword };";
 
 /** Membuat Test Double untuk Firebase Auth. */
 function createAuthDouble() {
