@@ -27,13 +27,15 @@ const INSTRUMENTED_SOURCE = instrumenter.instrumentSync(APP_SOURCE, APP_PATH);
 const EXPORT_HOOK =
   "\n;globalThis.__pumeow = { state, render, navigate, saveState, loadState, showSnackbar, ROUTES," +
   " validateLoginInput, signInWithEmail, mapAuthError, maskPassword," +
-  " validateRegisterInput, registerWithEmail, mapRegisterError };";
+  " validateRegisterInput, registerWithEmail, mapRegisterError," +
+  " validateForgotPasswordInput, firebaseResetPasswordForEmail };";
 
 /** Membuat Test Double untuk Firebase Auth. */
 function createAuthDouble() {
   return {
     signInWithEmailAndPassword: jest.fn(),
     createUserWithEmailAndPassword: jest.fn(),
+    sendPasswordResetEmail: jest.fn(() => Promise.resolve()),
     onAuthStateChanged: jest.fn(),
   };
 }

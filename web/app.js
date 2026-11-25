@@ -535,6 +535,23 @@ async function registerWithEmail(auth, email, password) {
   }
 }
 
+// ─── Forgot password helpers ────────────────────────────────────
+/**
+ * Memvalidasi email pada form lupa password tanpa menyentuh DOM.
+ * @returns {{ valid: boolean, error: string, email: string }}
+ */
+function validateForgotPasswordInput(emailValue) {
+  const email = String(emailValue ?? "").trim();
+
+  if (!email) {
+    return { valid: false, error: "Email wajib diisi", email };
+  }
+  if (!EMAIL_PATTERN.test(email)) {
+    return { valid: false, error: "Format email tidak valid", email };
+  }
+  return { valid: true, error: "", email };
+}
+
 function currentProduct() {
   return state.products.find((p) => p.id === state.selectedProductId) || state.products[0];
 }
@@ -2514,25 +2531,19 @@ document.addEventListener("submit", async (event) => {
   // 3. FORGOT PASSWORD FORM (FEATURE 1)
   if (event.target.id === "forgotPasswordForm") {
     event.preventDefault();
-    const emailInput = document.getElementById("forgotEmail");
     const errorEl = document.getElementById("forgotEmailError");
-    const email = emailInput.value.trim();
+    const validation = validateForgotPasswordInput(
+      document.getElementById("forgotEmail").value
+    );
 
-    errorEl.textContent = "";
+    errorEl.textContent = validation.error;
 
-    if (!email) {
-      errorEl.textContent = "Email wajib diisi";
-      return;
-    }
-    if (!/^\S+@\S+\.\S+$/.test(email)) {
-      errorEl.textContent = "Format email tidak valid";
-      return;
-    }
+    if (!validation.valid) return;
 
     state.auth.isLoading = true;
     render();
 
-    await firebaseResetPasswordForEmail(email);
+    await firebaseResetPasswordForEmail(validation.email);
 
     state.auth.isLoading = false;
     state.forgotSuccessMessage = "Instruksi dan tautan reset password telah dikirim ke email Anda jika terdaftar.";
