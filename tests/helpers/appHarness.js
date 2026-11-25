@@ -29,7 +29,8 @@ const EXPORT_HOOK =
   " validateLoginInput, signInWithEmail, mapAuthError, maskPassword," +
   " validateRegisterInput, registerWithEmail, mapRegisterError," +
   " validateForgotPasswordInput, firebaseResetPasswordForEmail," +
-  " validateResetPasswordInput, firebaseUpdateUserPassword };";
+  " validateResetPasswordInput, firebaseUpdateUserPassword," +
+  " addToCart, removeFromCart, cartEntries, cartIsEmpty, formatPrice };";
 
 /** Membuat Test Double untuk Firebase Auth. */
 function createAuthDouble() {
