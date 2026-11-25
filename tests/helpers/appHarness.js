@@ -28,7 +28,8 @@ const EXPORT_HOOK =
   "\n;globalThis.__pumeow = { state, render, navigate, saveState, loadState, showSnackbar, ROUTES," +
   " validateLoginInput, signInWithEmail, mapAuthError, maskPassword," +
   " validateRegisterInput, registerWithEmail, mapRegisterError," +
-  " validateForgotPasswordInput, firebaseResetPasswordForEmail };";
+  " validateForgotPasswordInput, firebaseResetPasswordForEmail," +
+  " validateResetPasswordInput, firebaseUpdateUserPassword };";
 
 /** Membuat Test Double untuk Firebase Auth. */
 function createAuthDouble() {
@@ -37,6 +38,7 @@ function createAuthDouble() {
     createUserWithEmailAndPassword: jest.fn(),
     sendPasswordResetEmail: jest.fn(() => Promise.resolve()),
     onAuthStateChanged: jest.fn(),
+    currentUser: null,
   };
 }
 

@@ -552,6 +552,39 @@ function validateForgotPasswordInput(emailValue) {
   return { valid: true, error: "", email };
 }
 
+// ─── Reset password helpers ─────────────────────────────────────
+/**
+ * Memvalidasi form ubah/reset password tanpa menyentuh DOM.
+ * @returns {{ valid: boolean, errors: { password: string, confirm: string },
+ *            credentials: { password: string, confirm: string } }}
+ */
+function validateResetPasswordInput(newPasswordValue, confirmPasswordValue) {
+  const credentials = {
+    password: String(newPasswordValue ?? "").trim(),
+    confirm: String(confirmPasswordValue ?? "").trim()
+  };
+  const errors = { password: "", confirm: "" };
+  let valid = true;
+
+  if (!credentials.password) {
+    errors.password = "Password baru wajib diisi";
+    valid = false;
+  } else if (credentials.password.length < 6) {
+    errors.password = "Password minimal 6 karakter";
+    valid = false;
+  }
+
+  if (!credentials.confirm) {
+    errors.confirm = "Konfirmasi password wajib diisi";
+    valid = false;
+  } else if (credentials.password !== credentials.confirm) {
+    errors.confirm = "Konfirmasi password tidak cocok";
+    valid = false;
+  }
+
+  return { valid, errors, credentials };
+}
+
 function currentProduct() {
   return state.products.find((p) => p.id === state.selectedProductId) || state.products[0];
 }
@@ -2555,35 +2588,19 @@ document.addEventListener("submit", async (event) => {
   // 4. RESET PASSWORD FORM (FEATURE 1)
   if (event.target.id === "resetPasswordForm") {
     event.preventDefault();
-    const newPassInput = document.getElementById("newPassword");
-    const confirmInput = document.getElementById("confirmNewPassword");
     const passError = document.getElementById("newPasswordError");
     const confirmError = document.getElementById("confirmNewPasswordError");
 
-    const newPassword = newPassInput.value.trim();
-    const confirmPassword = confirmInput.value.trim();
+    const validation = validateResetPasswordInput(
+      document.getElementById("newPassword").value,
+      document.getElementById("confirmNewPassword").value
+    );
+    const newPassword = validation.credentials.password;
 
-    passError.textContent = "";
-    confirmError.textContent = "";
+    passError.textContent = validation.errors.password;
+    confirmError.textContent = validation.errors.confirm;
 
-    let valid = true;
-    if (!newPassword) {
-      passError.textContent = "Password baru wajib diisi";
-      valid = false;
-    } else if (newPassword.length < 6) {
-      passError.textContent = "Password minimal 6 karakter";
-      valid = false;
-    }
-
-    if (!confirmPassword) {
-      confirmError.textContent = "Konfirmasi password wajib diisi";
-      valid = false;
-    } else if (newPassword !== confirmPassword) {
-      confirmError.textContent = "Konfirmasi password tidak cocok";
-      valid = false;
-    }
-
-    if (!valid) return;
+    if (!validation.valid) return;
 
     state.auth.isLoading = true;
     render();
