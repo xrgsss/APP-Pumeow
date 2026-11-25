@@ -1,19 +1,43 @@
-Focused coverage - fungsi yang diuji unit test
+Ringkasan coverage unit test per fitur
 Sumber: coverage/coverage-final.json (Istanbul via Jest)
 
-Function                                Lines      Stmts     Branch   Stmt %  Branch %
-----------------------------------------------------------------------------------------
-formatPrice                         328-330      1/1       2/2     100.00%   100.00%
-saveState                           336-348      2/2       1/1     100.00%   100.00%
-loadState                           350-374     15/15     23/23    100.00%   100.00%
-maskPassword                        376-379      3/3       2/2     100.00%   100.00%
-mapAuthError                        396-398      1/1       3/3     100.00%   100.00%
-validateLoginInput                  405-430     16/16     12/12    100.00%   100.00%
-signInWithEmail                     438-468      9/9       8/8     100.00%   100.00%
-firebaseResetPasswordForEmail       582-592      5/5       3/3     100.00%   100.00%
-firebaseUpdateUserPassword          595-606      7/7       5/5     100.00%   100.00%
-----------------------------------------------------------------------------------------
-TOTAL                                           59/59     59/59    100.00%   100.00%
+Fitur                  Fungsi                               Lines     Stmt   Branch
+-----------------------------------------------------------------------------------
+1. Login               validateLoginInput                405-430   16/16    12/12  
+                       signInWithEmail                   438-468    9/9      8/8   
+                       mapAuthError                      396-398    1/1      3/3   
+                       saveState                         336-348    2/2      1/1   
+                       loadState                         350-374   15/15    23/23  
+                       maskPassword                      376-379    3/3      2/2   
 
-Catatan: angka overall app.js lebih rendah karena seluruh view/UI
-lain tidak menjadi objek unit test pada modul ini.
+2. Register            validateRegisterInput             487-510   13/13    16/16  
+                       registerWithEmail                 516-536    7/7      4/6   
+                       mapRegisterError                  478-480    1/1      3/3   
+
+3. Lupa Password       validateForgotPasswordInput       543-553    6/6      6/6   
+                       firebaseResetPasswordForEmail     708-718    5/5      3/3   
+
+4. Ubah Password       validateResetPasswordInput        561-586   16/16    12/12  
+                       firebaseUpdateUserPassword        721-732    7/7      5/5   
+
+5. Keranjang           addToCart                         605-627   17/17    11/12  
+                       removeFromCart                    629-638    7/7      4/4   
+                       cartEntries                       592-599    4/4      2/2   
+                       cartIsEmpty                       601-603    1/1      0/0   
+                       formatPrice                       328-330    1/1      2/2   
+
+6. Favorit             toggleFavorite                    640-647    4/4      2/2   
+                       favoriteProducts                  653-655    2/2      2/2   
+
+7. Pencarian & Filter  filterProducts                   1264-1278   8/8     18/19  
+
+8. Checkout            doCheckout                        935-1020  32/33    29/35  
+
+-----------------------------------------------------------------------------------
+TOTAL                                                             177/178  168/178 
+
+Statement coverage  : 177/178 = 99.44%
+Branch coverage     : 168/178 = 94.38%
+
+Catatan: angka overall app.js lebih rendah karena view/UI lain di luar
+lingkup unit testing modul ini.

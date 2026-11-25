@@ -1,32 +1,109 @@
-PASS tests/unit/login.service.unit.test.js
-  signInWithEmail() - unit test service login
-    √ Stub: mengembalikan hasil sukses yang deterministik (5 ms)
-    √ Mock: memanggil signInWithEmailAndPassword tepat sekali dengan argumen yang benar (1 ms)
-    √ Mock: memetakan auth/wrong-password menjadi pesan 'Password salah.' (5 ms)
-    √ Mock: memakai pesan exception sebagai fallback untuk kode error tak dikenal (1 ms)
-    √ Mock: respons sukses tanpa objek user dianggap gagal (3 ms)
-    √ Dummy/Tidak tersedia: auth null tidak memanggil Firebase dan mengembalikan pesan konfigurasi (2 ms)
-    √ Fake: autentikasi berhasil untuk akun yang terdaftar di penyimpanan in-memory (2 ms)
-    √ Fake: autentikasi gagal untuk password yang tidak cocok (1 ms)
-  mapAuthError() - unit test pemetaan kode error
-    √ memetakan auth/user-not-found ke pesan yang sesuai
-    √ memetakan auth/invalid-email ke pesan yang sesuai (1 ms)
-    √ memetakan auth/invalid-credential ke pesan yang sesuai (1 ms)
-    √ memetakan auth/too-many-requests ke pesan yang sesuai (1 ms)
-    √ memakai fallback bawaan untuk kode yang tidak dikenal (1 ms)
-    √ memakai fallback kustom bila diberikan (1 ms)
+PASS tests/unit/checkout.unit.test.js
+  doCheckout() - validasi sebelum membuat pesanan
+    √ menolak checkout saat keranjang kosong (4 ms)
+    √ menolak checkout saat kuantitas melebihi stok tersedia (2 ms)
+    √ menolak checkout saat produk di keranjang sudah tidak ada di katalog (1 ms)
+  doCheckout() - pembuatan pesanan berhasil
+    √ mengembalikan order record dengan status paid dan metode pembayaran (5 ms)
+    √ menghitung total harga dari seluruh item (1 ms)
+    √ menyertakan rincian item beserta kuantitas dan harga satuan (1 ms)
+    √ memotong stok produk sesuai kuantitas yang dibeli (1 ms)
+    √ menandai produk tidak tersedia saat stok habis setelah checkout (1 ms)
+    √ mengosongkan keranjang setelah pesanan dibuat (1 ms)
+    √ menambahkan pesanan ke urutan teratas daftar pesanan (1 ms)
+    √ mencatat riwayat pembelian satu entri per item (1 ms)
+    √ menyimpan pesanan ke localStorage (1 ms)
+    √ menyimpan alamat dan koordinat pengiriman dari argumen (1 ms)
+    √ DEFECT-03: kurir pickup tidak pernah dipakai karena membandingkan args.method (3 ms)
+    √ memakai kurir Driver Pumeow untuk metode pengiriman (1 ms)
+    √ memakai email default saat state tidak menyimpan email (1 ms)
+  doCheckout() - integrasi dengan Firestore (Mock)
+    √ menyimpan produk terbaru setelah stok dipotong (26 ms)
+    √ menulis pesanan ke koleksi orders beserta batch item (6 ms)
+
+PASS tests/unit/product-filter.unit.test.js
+  filterProducts() - pencarian dan filter katalog
+    √ mengembalikan seluruh produk saat kata kunci kosong dan varian Semua (1 ms)
+    √ mencocokkan nama produk tanpa membedakan huruf besar/kecil (1 ms)
+    √ mencocokkan nama varian
+    √ mencocokkan deskripsi produk
+    √ mencocokkan potongan kata di tengah nama (1 ms)
+    √ mengembalikan array kosong saat tidak ada yang cocok
+    √ memfilter berdasarkan varian yang dipilih
+    √ varian Semua menampilkan seluruh varian
+    √ varian yang tidak ada di katalog menghasilkan array kosong
+    √ kata kunci dan varian harus cocok bersamaan (AND)
+    √ mengembalikan array kosong saat katalog kosong
+    √ tidak memutasi katalog asli
+    √ menerima nilai null/undefined tanpa melempar error
+    √ mengabaikan produk yang field teksnya tidak lengkap
+  PRODUCT_VARIANTS - daftar chip varian
+    √ memuat opsi Semua di urutan pertama
+    √ memuat tujuh opsi varian
+
+PASS tests/unit/forgot-password.unit.test.js
+  validateForgotPasswordInput() - validasi email lupa password
+    √ menerima email valid dan mengembalikan hasil trim (1 ms)
+    √ menolak email kosong dengan pesan 'Email wajib diisi'
+    √ menolak email yang hanya berisi spasi
+    √ menolak format email salah: user@@gmail (dua karakter @)
+    √ menolak format email salah: user@gmail (tanpa domain bertitik)
+    √ menolak format email salah: user gmail.com (mengandung spasi)
+    √ tidak melempar error saat menerima null
+  firebaseResetPasswordForEmail() - pengiriman tautan reset
+    √ Stub: mengembalikan true saat pengiriman berhasil
+    √ Mock: memanggil sendPasswordResetEmail dengan email yang benar
+    √ Mock: kegagalan Firebase tidak dibocorkan dan tetap mengembalikan true
+    √ Dummy: auth null tidak memanggil Firebase dan tetap mengembalikan true (1 ms)
+    √ memakai fbAuth bawaan saat argumen auth tidak diberikan
+
+PASS tests/unit/login.session.unit.test.js
+  saveState()/loadState() - persistensi sesi login
+    √ Fake: menyimpan lalu memulihkan sesi login secara utuh (2 ms)
+    √ Fake: tidak mengubah state saat storage kosong (1 ms)
+    √ Fake: JSON rusak diabaikan tanpa melempar error
+    √ Fake: produk tanpa stok dinormalisasi menjadi stok 15 dan tetap tersedia (1 ms)
+    √ Fake: array favorit dari JSON dipulihkan sebagai Set
+  maskPassword() - penyamaran kredensial tersimpan
+    √ menyamarkan password hingga 12 karakter
+    √ mengembalikan teks default untuk nilai kosong
+
+PASS tests/unit/cart.unit.test.js
+  addToCart() - menambah produk ke keranjang
+    √ menambahkan produk tersedia sebanyak satu buah (2 ms)
+    √ menambah kuantitas pada pemanggilan berikutnya
+    √ menerima productId berupa string maupun number
+    √ menolak penambahan saat kuantitas sudah mencapai stok (1 ms)
+    √ menolak produk dengan stok nol
+    √ menolak produk yang ditandai tidak tersedia walau stok ada
+    √ mengabaikan productId yang tidak dikenal
+    √ menyimpan keranjang ke localStorage setelah penambahan (1 ms)
+  removeFromCart() - mengurangi isi keranjang
+    √ mengurangi kuantitas bila lebih dari satu
+    √ menghapus entri saat kuantitas tersisa satu (1 ms)
+    √ tidak melakukan apa pun untuk produk yang tidak ada di keranjang
+  cartEntries()/cartIsEmpty() - membaca isi keranjang
+    √ cartIsEmpty bernilai true saat keranjang kosong
+    √ cartIsEmpty bernilai false setelah produk ditambahkan (1 ms)
+    √ cartEntries menggabungkan produk dengan kuantitasnya
+    √ cartEntries mengabaikan id produk yang sudah tidak ada di katalog
+    √ cartEntries mengembalikan array kosong saat keranjang kosong
+  formatPrice() - format harga rupiah
+    √ memformat angka dengan pemisah ribuan (16 ms)
+    √ membulatkan nilai pecahan (1 ms)
+    √ menangani nilai kosong sebagai nol
 
 PASS tests/unit/login.validation.unit.test.js
   validateLoginInput() - unit test validasi login
-    √ menerima kredensial valid dan mengembalikan salinan yang sudah di-trim (3 ms)
+    √ menerima kredensial valid dan mengembalikan salinan yang sudah di-trim (1 ms)
     √ menolak email kosong dengan pesan 'Email wajib diisi' (1 ms)
-    √ menolak email yang hanya berisi spasi (1 ms)
-    √ menolak format email tidak valid: user@@gmail (dua karakter @) (1 ms)
+    √ menolak email yang hanya berisi spasi
+    √ menolak format email tidak valid: user@@gmail (dua karakter @)
     √ menolak format email tidak valid: user@gmail (tanpa domain bertitik)
     √ menolak format email tidak valid: user gmail.com (mengandung spasi)
     √ menolak format email tidak valid: @gmail.com (tanpa nama pengguna)
-    √ menolak format email tidak valid: user@.com (domain kosong) (1 ms)
-    √ menolak password kosong dengan pesan 'Password wajib diisi'
+    √ menolak format email tidak valid: user@.com (domain kosong)
+    √ menolak password kosong dengan pesan 'Password wajib diisi' (1 ms)
     √ menolak password yang hanya berisi spasi setelah trim
     √ menolak password lima karakter
     √ menerima password tepat enam karakter (batas bawah inklusif)
@@ -34,34 +111,84 @@ PASS tests/unit/login.validation.unit.test.js
     √ tidak melempar error saat menerima null atau undefined (1 ms)
     √ karakterisasi: pola email longgar meloloskan a@b.c (1 ms)
 
-PASS tests/unit/auth.services.unit.test.js
-  firebaseResetPasswordForEmail() - unit test kirim email reset
-    √ Stub: mengembalikan true saat pengiriman berhasil (6 ms)
-    √ Mock: memanggil sendPasswordResetEmail dengan email yang benar (3 ms)
-    √ Mock: kegagalan Firebase tidak dibocorkan dan tetap mengembalikan true (2 ms)
-    √ mengembalikan true tanpa memanggil Firebase saat auth tidak tersedia (6 ms)
-    √ memakai fbAuth bawaan saat argumen auth tidak diberikan (1 ms)
-  firebaseUpdateUserPassword() - unit test ubah password
+PASS tests/unit/reset-password.unit.test.js
+  validateResetPasswordInput() - validasi form ubah password
+    √ menerima password dan konfirmasi yang cocok (2 ms)
+    √ memangkas spasi sebelum membandingkan (1 ms)
+    √ menolak password baru yang kosong
+    √ menolak password baru kurang dari enam karakter
+    √ menerima password tepat enam karakter
+    √ menolak konfirmasi yang tidak cocok (1 ms)
+    √ tidak melempar error saat menerima null
+  firebaseUpdateUserPassword() - service ubah password
     √ Stub: mengembalikan success saat currentUser tersedia (1 ms)
     √ Mock: meneruskan password baru ke currentUser.updatePassword (1 ms)
-    √ Mock: error dari Firebase dilempar ulang setelah dicatat (21 ms)
-    √ tidak memanggil updatePassword saat tidak ada user yang login (4 ms)
-    √ mengembalikan success saat objek auth tidak tersedia (2 ms)
-    √ memakai fbAuth bawaan saat argumen auth tidak diberikan (1 ms)
-  formatPrice()/maskPassword() - unit test helper murni
-    √ formatPrice memformat angka dengan pemisah ribuan (35 ms)
-    √ formatPrice menangani nilai kosong sebagai nol (3 ms)
-    √ maskPassword menyamarkan password hingga 12 karakter (2 ms)
-    √ maskPassword mengembalikan teks default untuk nilai kosong (3 ms)
-  saveState()/loadState() - unit test persistensi dengan Fake localStorage
-    √ Fake: menyimpan lalu memulihkan state secara utuh (12 ms)
-    √ Fake: tidak mengubah state saat storage kosong (3 ms)
-    √ Fake: JSON rusak diabaikan tanpa melempar error (2 ms)
-    √ Fake: produk tanpa stok dinormalisasi menjadi stok 15 dan tetap tersedia (2 ms)
-    √ Fake: array favorit dari JSON dipulihkan sebagai Set (2 ms)
+    √ Mock: error dari Firebase dilempar ulang setelah dicatat (9 ms)
+    √ Dummy: tidak memanggil updatePassword saat tidak ada user yang login
+    √ Dummy: mengembalikan success saat objek auth tidak tersedia
+    √ memakai fbAuth bawaan saat argumen auth tidak diberikan
 
-Test Suites: 3 passed, 3 total
-Tests:       49 passed, 49 total
+PASS tests/unit/favorites.unit.test.js
+  toggleFavorite() - menandai produk favorit
+    √ menambahkan produk ke favorit saat belum ditandai
+    √ menghapus produk dari favorit saat ditandai dua kali
+    √ mendukung beberapa produk favorit sekaligus
+    √ menghapus satu produk tidak memengaruhi favorit lain (1 ms)
+    √ menyimpan favorit ke storage setelah setiap perubahan
+    √ Fake: favorit dipulihkan sebagai Set setelah loadState
+  favoriteProducts() - daftar produk favorit
+    √ mengembalikan array kosong saat belum ada favorit
+    √ mengembalikan hanya produk yang ditandai favorit
+    √ mempertahankan urutan katalog, bukan urutan penandaan
+    √ mengabaikan id favorit yang produknya sudah tidak ada
+    √ menerima katalog dan himpunan favorit sebagai parameter (pure)
+
+PASS tests/unit/login.service.unit.test.js
+  signInWithEmail() - unit test service login
+    √ Stub: mengembalikan hasil sukses yang deterministik (1 ms)
+    √ Mock: memanggil signInWithEmailAndPassword tepat sekali dengan argumen yang benar (1 ms)
+    √ Mock: memetakan auth/wrong-password menjadi pesan 'Password salah.' (1 ms)
+    √ Mock: memakai pesan exception sebagai fallback untuk kode error tak dikenal
+    √ Mock: respons sukses tanpa objek user dianggap gagal (1 ms)
+    √ Dummy/Tidak tersedia: auth null tidak memanggil Firebase dan mengembalikan pesan konfigurasi (1 ms)
+    √ Fake: autentikasi berhasil untuk akun yang terdaftar di penyimpanan in-memory (1 ms)
+    √ Fake: autentikasi gagal untuk password yang tidak cocok (1 ms)
+  mapAuthError() - unit test pemetaan kode error
+    √ memetakan auth/user-not-found ke pesan yang sesuai (1 ms)
+    √ memetakan auth/invalid-email ke pesan yang sesuai
+    √ memetakan auth/invalid-credential ke pesan yang sesuai
+    √ memetakan auth/too-many-requests ke pesan yang sesuai
+    √ memakai fallback bawaan untuk kode yang tidak dikenal
+    √ memakai fallback kustom bila diberikan (1 ms)
+
+PASS tests/unit/register.unit.test.js
+  validateRegisterInput() - validasi form register
+    √ menerima kombinasi email, password, dan konfirmasi yang valid (1 ms)
+    √ memangkas spasi pada ketiga field sebelum validasi
+    √ menolak email tidak valid:  (email kosong)
+    √ menolak email tidak valid: usergmail.com (tanpa karakter @) (1 ms)
+    √ menolak email tidak valid: user@gmail (tanpa domain bertitik)
+    √ menolak email tidak valid: user@.com (domain kosong)
+    √ menolak password kosong dengan pesan minimal 6 karakter
+    √ menolak password lima karakter
+    √ menolak konfirmasi yang tidak sama dengan password (1 ms)
+    √ melaporkan tiga kesalahan sekaligus pada input yang seluruhnya salah
+    √ tidak melempar error saat menerima null (1 ms)
+  registerWithEmail() - service pendaftaran akun
+    √ Stub: mengembalikan hasil sukses deterministik (1 ms)
+    √ Mock: memanggil createUserWithEmailAndPassword tepat sekali dengan argumen benar (1 ms)
+    √ Mock: memetakan auth/email-already-in-use ke pesan yang ramah
+    √ Mock: memetakan auth/weak-password ke pesan minimal 6 karakter (1 ms)
+    √ Mock: memakai pesan exception sebagai fallback kode tak dikenal
+    √ Dummy: auth null tidak memanggil Firebase dan mengembalikan pesan konfigurasi
+  mapRegisterError() - pemetaan kode error register
+    √ memetakan auth/invalid-email ke pesan yang sesuai
+    √ memetakan auth/email-already-in-use ke pesan yang sesuai
+    √ memetakan auth/weak-password ke pesan yang sesuai
+    √ memakai fallback 'Registrasi gagal.' untuk kode tak dikenal
+
+Test Suites: 10 passed, 10 total
+Tests:       146 passed, 146 total
 Snapshots:   0 total
-Time:        7.359 s, estimated 9 s
+Time:        10.456 s
 Ran all test suites matching /tests\\unit/i.

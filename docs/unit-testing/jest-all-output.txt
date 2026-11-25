@@ -1,0 +1,19 @@
+PASS tests/unit/checkout.unit.test.js
+PASS tests/login.authentication.test.js
+PASS tests/unit/cart.unit.test.js
+PASS tests/login.validation.test.js
+PASS tests/unit/forgot-password.unit.test.js
+PASS tests/unit/register.unit.test.js
+PASS tests/unit/favorites.unit.test.js
+PASS tests/unit/login.validation.unit.test.js
+PASS tests/unit/reset-password.unit.test.js
+PASS tests/login.firebase-unavailable.test.js
+PASS tests/unit/login.session.unit.test.js
+PASS tests/unit/product-filter.unit.test.js
+PASS tests/unit/login.service.unit.test.js
+
+Test Suites: 13 passed, 13 total
+Tests:       169 passed, 169 total
+Snapshots:   0 total
+Time:        13.66 s, estimated 14 s
+Ran all test suites.
