@@ -1255,18 +1255,35 @@ function renderProductCard(product) {
   `;
 }
 
-function renderHome() {
-  const variants = ["Semua", "Vanilla", "Chocolate", "Mango", "Taro", "Pandan", "Buah"];
-  const query = state.search.toLowerCase();
-  const filtered = state.products.filter((p) => {
+const PRODUCT_VARIANTS = ["Semua", "Vanilla", "Chocolate", "Mango", "Taro", "Pandan", "Buah"];
+
+/**
+ * Menyaring katalog produk berdasarkan kata kunci dan varian terpilih.
+ * Dipisahkan dari renderHome() agar logika pencarian dapat diuji sebagai unit.
+ */
+function filterProducts(products, search = "", variant = "Semua") {
+  const query = String(search ?? "").toLowerCase();
+  return (products || []).filter((p) => {
+    const name = String(p.name ?? "").toLowerCase();
+    const productVariant = String(p.variant ?? "").toLowerCase();
+    const description = String(p.description ?? "").toLowerCase();
+
     const matchQuery =
-      p.name.toLowerCase().includes(query) ||
-      p.variant.toLowerCase().includes(query) ||
-      p.description.toLowerCase().includes(query);
-    const matchFilter =
-      state.selectedVariant === "Semua" || p.variant === state.selectedVariant;
+      name.includes(query) ||
+      productVariant.includes(query) ||
+      description.includes(query);
+    const matchFilter = variant === "Semua" || p.variant === variant;
     return matchQuery && matchFilter;
   });
+}
+
+function renderHome() {
+  const variants = PRODUCT_VARIANTS;
+  const filtered = filterProducts(
+    state.products,
+    state.search,
+    state.selectedVariant
+  );
 
   return `
     <section class="view home-view">

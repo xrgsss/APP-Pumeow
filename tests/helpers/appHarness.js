@@ -31,7 +31,7 @@ const EXPORT_HOOK =
   " validateForgotPasswordInput, firebaseResetPasswordForEmail," +
   " validateResetPasswordInput, firebaseUpdateUserPassword," +
   " addToCart, removeFromCart, cartEntries, cartIsEmpty, formatPrice," +
-  " toggleFavorite, favoriteProducts };";
+  " toggleFavorite, favoriteProducts, filterProducts, PRODUCT_VARIANTS };";
 
 /** Membuat Test Double untuk Firebase Auth. */
 function createAuthDouble() {
