@@ -646,6 +646,14 @@ function toggleFavorite(productId) {
   saveState();
 }
 
+/**
+ * Mengambil daftar produk favorit sesuai isi state.favorites.
+ * Dipisahkan dari renderFavorites() agar dapat diuji sebagai unit.
+ */
+function favoriteProducts(products = state.products, favorites = state.favorites) {
+  return products.filter((p) => favorites.has(p.id));
+}
+
 // ─── Firebase Products Services ─────────────────────────────────
 async function firebaseFetchProducts() {
   if (fbDb) {
@@ -1369,7 +1377,7 @@ function renderCart() {
 }
 
 function renderFavorites() {
-  const items = state.products.filter((p) => state.favorites.has(p.id));
+  const items = favoriteProducts();
   return `
     <section class="view">
       ${renderHeader("Favorit", ROUTES.HOME)}
