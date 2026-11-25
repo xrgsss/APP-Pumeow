@@ -31,7 +31,8 @@ const EXPORT_HOOK =
   " validateForgotPasswordInput, firebaseResetPasswordForEmail," +
   " validateResetPasswordInput, firebaseUpdateUserPassword," +
   " addToCart, removeFromCart, cartEntries, cartIsEmpty, formatPrice," +
-  " toggleFavorite, favoriteProducts, filterProducts, PRODUCT_VARIANTS };";
+  " toggleFavorite, favoriteProducts, filterProducts, PRODUCT_VARIANTS," +
+  " doCheckout };";
 
 /** Membuat Test Double untuk Firebase Auth. */
 function createAuthDouble() {
@@ -45,11 +46,48 @@ function createAuthDouble() {
 }
 
 /**
- * Memuat app.js satu kali ke dalam dokumen jsdom.
- * @param {{ auth: object|null }} options auth = null mensimulasikan Firebase
- *        yang gagal diinisialisasi (fbAuth bernilai null).
+ * Membuat Test Double untuk Firestore.
+ * Cukup lengkap untuk operasi yang dipakai app.js: baca koleksi, tulis
+ * dokumen, update, delete, batch, serta query berantai.
  */
-function loadApp({ auth = createAuthDouble() } = {}) {
+function createFirestoreDouble() {
+  const makeDocRef = () => ({
+    set: jest.fn(() => Promise.resolve()),
+    update: jest.fn(() => Promise.resolve()),
+    delete: jest.fn(() => Promise.resolve()),
+    get: jest.fn(() => Promise.resolve({ exists: false })),
+    collection: jest.fn(() => makeCollectionRef()),
+    onSnapshot: jest.fn(),
+  });
+
+  const makeCollectionRef = () => ({
+    get: jest.fn(() => Promise.resolve({ empty: true, docs: [] })),
+    doc: jest.fn(() => makeDocRef()),
+    add: jest.fn(() => Promise.resolve()),
+    orderBy: jest.fn(function () { return this; }),
+    where: jest.fn(function () { return this; }),
+    onSnapshot: jest.fn(),
+  });
+
+  return {
+    enablePersistence: jest.fn(() => Promise.resolve()),
+    collection: jest.fn(() => makeCollectionRef()),
+    batch: jest.fn(() => ({
+      set: jest.fn(),
+      commit: jest.fn(() => Promise.resolve()),
+    })),
+  };
+}
+
+/**
+ * Memuat app.js satu kali ke dalam dokumen jsdom.
+ * @param {{ auth?: object|null, firestore?: object }} options
+ *        auth = null mensimulasikan Firebase yang gagal diinisialisasi.
+ */
+function loadApp({
+  auth = createAuthDouble(),
+  firestore = createFirestoreDouble(),
+} = {}) {
   document.body.innerHTML =
     '<div id="appRoot"></div><div id="snackbar"></div>' +
     '<div id="startupPopup"></div><button id="startupClose"></button>';
@@ -60,19 +98,13 @@ function loadApp({ auth = createAuthDouble() } = {}) {
   global.firebase = {
     initializeApp: jest.fn(() => ({ name: "pumeow-test" })),
     auth: jest.fn(() => auth),
-    firestore: jest.fn(() => ({
-      enablePersistence: jest.fn(() => Promise.resolve()),
-      collection: jest.fn(() => ({
-        get: jest.fn(() => Promise.resolve({ empty: true, docs: [] })),
-        doc: jest.fn(() => ({ set: jest.fn(() => Promise.resolve()) })),
-      })),
-    })),
+    firestore: jest.fn(() => firestore),
   };
 
   // eslint-disable-next-line no-new-func
   new Function(INSTRUMENTED_SOURCE + EXPORT_HOOK)();
 
-  return { app: globalThis.__pumeow, auth };
+  return { app: globalThis.__pumeow, auth, firestore };
 }
 
 /** Mengembalikan state auth ke kondisi awal sebelum setiap test. */
@@ -118,6 +150,7 @@ function flush() {
 module.exports = {
   loadApp,
   createAuthDouble,
+  createFirestoreDouble,
   resetState,
   openLoginPage,
   submitLogin,
