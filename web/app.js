@@ -467,6 +467,74 @@ async function signInWithEmail(auth, email, password) {
   }
 }
 
+// ─── Register helpers ───────────────────────────────────────────
+const REGISTER_ERROR_MESSAGES = {
+  "auth/operation-not-allowed": "Provider Email/Password belum diaktifkan di Firebase Console. Buka Authentication > Sign-in method lalu Enable Email/Password.",
+  "auth/email-already-in-use": "Email ini sudah terdaftar.",
+  "auth/invalid-email": "Format email tidak valid.",
+  "auth/weak-password": "Password terlalu lemah (minimal 6 karakter)."
+};
+
+function mapRegisterError(code, fallback = "Registrasi gagal.") {
+  return REGISTER_ERROR_MESSAGES[code] || fallback;
+}
+
+/**
+ * Memvalidasi form register tanpa menyentuh DOM.
+ * Catatan: pesan error mengikuti perilaku asli handler, yaitu pesan email
+ * tunggal "Email tidak valid" dan batas minimal password enam karakter.
+ */
+function validateRegisterInput(emailValue, passwordValue, confirmValue) {
+  const credentials = {
+    email: String(emailValue ?? "").trim(),
+    password: String(passwordValue ?? "").trim(),
+    confirm: String(confirmValue ?? "").trim()
+  };
+  const errors = { email: "", password: "", confirm: "" };
+  let valid = true;
+
+  if (!credentials.email || !EMAIL_PATTERN.test(credentials.email)) {
+    errors.email = "Email tidak valid";
+    valid = false;
+  }
+  if (!credentials.password || credentials.password.length < 6) {
+    errors.password = "Password minimal 6 karakter";
+    valid = false;
+  }
+  if (credentials.password !== credentials.confirm) {
+    errors.confirm = "Password tidak sama";
+    valid = false;
+  }
+
+  return { valid, errors, credentials };
+}
+
+/**
+ * Membuat akun baru melalui objek auth yang diinjeksi.
+ * @returns {Promise<{ ok: boolean, code: string|null, message: string }>}
+ */
+async function registerWithEmail(auth, email, password) {
+  if (!auth) {
+    return {
+      ok: false,
+      code: "auth/not-initialized",
+      message: "Firebase belum terhubung. Periksa konfigurasi Firebase."
+    };
+  }
+
+  try {
+    await auth.createUserWithEmailAndPassword(email, password);
+    return { ok: true, code: null, message: "" };
+  } catch (err) {
+    console.error("Firebase Register Error:", err);
+    return {
+      ok: false,
+      code: err?.code || "auth/unknown",
+      message: mapRegisterError(err?.code, err?.message || "Registrasi gagal.")
+    };
+  }
+}
+
 function currentProduct() {
   return state.products.find((p) => p.id === state.selectedProductId) || state.products[0];
 }
@@ -2410,54 +2478,29 @@ document.addEventListener("submit", async (event) => {
   // 2. REGISTER FORM
   if (event.target.id === "registerForm") {
     event.preventDefault();
-    const email = document.getElementById("regEmail").value.trim();
-    const password = document.getElementById("regPassword").value.trim();
-    const confirm = document.getElementById("regConfirm").value.trim();
 
-    document.getElementById("regEmailError").textContent = "";
-    document.getElementById("regPasswordError").textContent = "";
-    document.getElementById("regConfirmError").textContent = "";
+    const validation = validateRegisterInput(
+      document.getElementById("regEmail").value,
+      document.getElementById("regPassword").value,
+      document.getElementById("regConfirm").value
+    );
+    const { email, password } = validation.credentials;
 
-    let valid = true;
-    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-      document.getElementById("regEmailError").textContent = "Email tidak valid";
-      valid = false;
-    }
-    if (!password || password.length < 6) {
-      document.getElementById("regPasswordError").textContent = "Password minimal 6 karakter";
-      valid = false;
-    }
-    if (password !== confirm) {
-      document.getElementById("regConfirmError").textContent = "Password tidak sama";
-      valid = false;
-    }
+    document.getElementById("regEmailError").textContent = validation.errors.email;
+    document.getElementById("regPasswordError").textContent = validation.errors.password;
+    document.getElementById("regConfirmError").textContent = validation.errors.confirm;
 
-    if (!valid) return;
+    if (!validation.valid) return;
 
     state.auth.isLoading = true;
     render();
 
-    if (!fbAuth) {
-      state.auth.isLoading = false;
-      const errEl = document.getElementById("regEmailError");
-      if (errEl) errEl.textContent = "Firebase belum terhubung. Periksa konfigurasi Firebase.";
-      render();
-      return;
-    }
+    const registerResult = await registerWithEmail(fbAuth, email, password);
 
-    try {
-      await fbAuth.createUserWithEmailAndPassword(email, password);
-    } catch (err) {
-      console.error("Firebase Register Error:", err);
+    if (!registerResult.ok) {
       state.auth.isLoading = false;
       const errEl = document.getElementById("regEmailError");
-      const errMap = {
-        "auth/operation-not-allowed": "Provider Email/Password belum diaktifkan di Firebase Console. Buka Authentication > Sign-in method lalu Enable Email/Password.",
-        "auth/email-already-in-use": "Email ini sudah terdaftar.",
-        "auth/invalid-email": "Format email tidak valid.",
-        "auth/weak-password": "Password terlalu lemah (minimal 6 karakter)."
-      };
-      if (errEl) errEl.textContent = errMap[err.code] || err.message || "Registrasi gagal.";
+      if (errEl) errEl.textContent = registerResult.message;
       render();
       return;
     }
